@@ -40,7 +40,9 @@ export const LGPDBanner: React.FC = () => {
         return;
       }
 
-      const existingScript = document.getElementById('google-adsense-script');
+      const existingScript =
+        document.getElementById('google-adsense-script') ||
+        document.querySelector('script[src*="adsbygoogle.js"]');
       if (!existingScript) {
         const script = document.createElement('script');
         script.id = 'google-adsense-script';

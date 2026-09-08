@@ -15,9 +15,10 @@ declare global {
   }
 }
 
-// Suporte a identificador real via variável de ambiente quando o usuário for aprovado no AdSense
+// Identificador oficial do Google AdSense
 export const ADSENSE_CLIENT_ID =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ADSENSE_CLIENT_ID) || '';
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ADSENSE_CLIENT_ID) ||
+  'ca-pub-1242153191500402';
 
 export const isRealAdSenseConfigured = Boolean(
   ADSENSE_CLIENT_ID &&
