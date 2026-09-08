@@ -1,0 +1,6 @@
+{
+  "name": "CodeCompare",
+  "description": "Blog técnico comparativo para desenvolvedores: compare implementações entre frameworks frontend, linguagens backend e arquiteturas de banco de dados.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
