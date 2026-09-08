@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Cookie, Settings2, Check, X, ShieldAlert } from 'lucide-react';
 import { PrivacyPolicyModal } from './PrivacyPolicyModal.tsx';
+import { isRealAdSenseConfigured, ADSENSE_CLIENT_ID } from './AdUnit.tsx';
 
 export const LGPDBanner: React.FC = () => {
   const [showBanner, setShowBanner] = useState(false);
@@ -13,6 +14,12 @@ export const LGPDBanner: React.FC = () => {
 
   useEffect(() => {
     try {
+      // Limpeza preventiva de scripts caso não haja ID real configurado
+      if (typeof document !== 'undefined' && !isRealAdSenseConfigured) {
+        const oldScript = document.getElementById('google-adsense-script');
+        if (oldScript) oldScript.remove();
+      }
+
       const consent = localStorage.getItem('codecompare_lgpd_consent');
       if (!consent) {
         setShowBanner(true);
@@ -26,11 +33,18 @@ export const LGPDBanner: React.FC = () => {
 
   const loadAdSenseScript = () => {
     if (typeof document !== 'undefined') {
+      // Somente carrega o script externo do Google AdSense se um ID real (ca-pub-...) estiver configurado
+      if (!isRealAdSenseConfigured) {
+        const existing = document.getElementById('google-adsense-script');
+        if (existing) existing.remove();
+        return;
+      }
+
       const existingScript = document.getElementById('google-adsense-script');
       if (!existingScript) {
         const script = document.createElement('script');
         script.id = 'google-adsense-script';
-        script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX';
+        script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`;
         script.async = true;
         script.crossOrigin = 'anonymous';
         document.head.appendChild(script);
@@ -88,7 +102,7 @@ export const LGPDBanner: React.FC = () => {
                   onClick={() => setShowPolicyModal(true)}
                   className="text-cyan-400 hover:text-cyan-300 underline font-medium cursor-pointer"
                 >
-                  Ler Política de Privacidade completa (Art. 18 LGPD) & ads.txt
+                  Ler Política de Privacidade completa (Art. 18 LGPD)
                 </button>
               </div>
             </div>

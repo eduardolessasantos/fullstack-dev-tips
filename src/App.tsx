@@ -23,8 +23,7 @@ import {
   Filter,
   ExternalLink,
   Flame,
-  Clock,
-  Github
+  Clock
 } from 'lucide-react';
 import { PageId, FrontendFramework, BackendLanguage, DatabaseTab } from './types.ts';
 import { FRONTEND_COMPARISONS } from './data/frontendData.ts';
@@ -407,21 +406,6 @@ export default function App() {
                 >
                   {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
-
-                <a
-                  href="https://github.com/eduardolessasantos/blog_fullstack"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full border text-xs font-medium transition-all ${
-                    theme === 'dark'
-                      ? 'bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-300'
-                      : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-700 shadow-sm'
-                  }`}
-                  title="Ver repositório no GitHub"
-                >
-                  <Github size={15} />
-                  <span>GitHub</span>
-                </a>
               </div>
             </div>
           </header>
@@ -1044,23 +1028,6 @@ export default function App() {
                 >
                   Política de Privacidade (LGPD)
                 </button>
-                <a
-                  href="/ads.txt"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-cyan-400 transition-colors"
-                >
-                  ads.txt
-                </a>
-                <a
-                  href="https://github.com/eduardolessasantos/blog_fullstack"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-cyan-400 transition-colors flex items-center gap-1"
-                >
-                  <Github size={13} />
-                  <span>GitHub</span>
-                </a>
               </div>
             </div>
           </footer>
