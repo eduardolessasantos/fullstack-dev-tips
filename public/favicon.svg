@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Gradiente oficial da identidade CodeCompare (Cyan -> Blue -> Violet) -->
+    <linearGradient id="ccGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="45%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+
+    <!-- Reflexo suave superior para profundidade tátil -->
+    <linearGradient id="sheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Sombra para contraste em qualquer cor de aba (dark ou light mode do navegador) -->
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#020617" flood-opacity="0.45" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Squircle Arredondado com borda sutil -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#ccGrad)" />
+  <rect x="2" y="2" width="60" height="30" rx="16" fill="url(#sheen)" />
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.25" />
+
+  <!-- Símbolos de Comparação de Código: < / > -->
+  <g filter="url(#dropShadow)" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Bracket Esquerdo < -->
+    <path d="M 23 21 L 14 32 L 23 43" />
+    
+    <!-- Barra Central de Comparação / (em ciano brilhante) -->
+    <path d="M 35 18 L 29 46" stroke="#cffafe" stroke-width="4.2" />
+    
+    <!-- Bracket Direito > -->
+    <path d="M 41 21 L 50 32 L 41 43" />
+  </g>
+</svg>
