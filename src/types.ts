@@ -1,10 +1,85 @@
-export type PageId = 'home' | 'frontend' | 'backend' | 'database';
+export type PageId =
+  | 'home'
+  | 'articles'
+  | 'article'
+  | 'frontend'
+  | 'backend'
+  | 'database'
+  | 'decision-matrix'
+  | 'about'
+  | 'editorial'
+  | 'contact'
+  | 'terms';
 
 export type FrontendFramework = 'angular' | 'vue' | 'react';
 
 export type BackendLanguage = 'dotnet' | 'java' | 'python' | 'go';
 
 export type DatabaseTab = 'nosql' | 'relational';
+
+export interface ArticleAuthor {
+  name: string;
+  role: string;
+  bio: string;
+  avatar: string;
+  github?: string;
+  linkedin?: string;
+}
+
+export interface ArticleBenchmark {
+  metric: string;
+  stackA: string;
+  stackB: string;
+  stackC?: string;
+  observation: string;
+}
+
+export interface DetailedArticle {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  category: 'frontend' | 'backend' | 'database' | 'architecture';
+  tag: string;
+  targetTab?: string;
+  targetPage?: PageId;
+  readingTime: string;
+  date: string;
+  updatedAt: string;
+  author: ArticleAuthor;
+  summary: string;
+  introduction: string[];
+  contextProblem: {
+    title: string;
+    description: string;
+    symptoms: string[];
+  };
+  benchmarks?: {
+    title: string;
+    description: string;
+    data: ArticleBenchmark[];
+  };
+  keyTradeoffs: {
+    title: string;
+    pros: string[];
+    cons: string[];
+    whenToChoose: string;
+  }[];
+  codeComparison?: {
+    title: string;
+    description: string;
+    snippets: {
+      label: string;
+      language: string;
+      filename: string;
+      code: string;
+      explanation: string;
+    }[];
+  };
+  pitfalls: string[];
+  conclusion: string[];
+  relatedArticleIds: string[];
+}
 
 export interface FrontendComparison {
   id: string;

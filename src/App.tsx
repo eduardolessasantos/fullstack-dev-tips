@@ -23,16 +23,29 @@ import {
   Filter,
   ExternalLink,
   Flame,
-  Clock
+  Clock,
+  Compass,
+  FileText,
+  Mail,
+  Scale,
+  ArrowRight,
+  CheckCircle2
 } from 'lucide-react';
 import { PageId, FrontendFramework, BackendLanguage, DatabaseTab } from './types.ts';
 import { FRONTEND_COMPARISONS } from './data/frontendData.ts';
 import { BACKEND_COMPARISONS } from './data/backendData.ts';
 import { NOSQL_DATA, RELATIONAL_OPTIMIZATIONS, RECENT_ARTICLES, RecentArticle } from './data/databaseData.ts';
+import { DETAILED_ARTICLES } from './data/articlesData.ts';
 import { CodeBlock } from './components/CodeBlock.tsx';
 import { AdUnit } from './components/AdUnit.tsx';
 import { LGPDBanner } from './components/LGPDBanner.tsx';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal.tsx';
+import { ArticleReader } from './components/ArticleReader.tsx';
+import { AboutView } from './components/AboutView.tsx';
+import { EditorialView } from './components/EditorialView.tsx';
+import { ContactView } from './components/ContactView.tsx';
+import { TermsView } from './components/TermsView.tsx';
+import { DecisionMatrixView } from './components/DecisionMatrixView.tsx';
 
 export default function App() {
   // Theme state with local persistence
@@ -46,6 +59,7 @@ export default function App() {
 
   // Navigation state
   const [currentPage, setCurrentPage] = useState<PageId>('home');
+  const [selectedArticleId, setSelectedArticleId] = useState<string>('signals-reactivity');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [activeFrontendTab, setActiveFrontendTab] = useState<FrontendFramework>('react');
   const [activeBackendLang, setActiveBackendLang] = useState<BackendLanguage>('dotnet');
@@ -74,19 +88,52 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const openArticle = (articleId: string) => {
+    setSelectedArticleId(articleId);
+    setCurrentPage('article');
+    setSidebarOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Filtered search results
   const searchResults = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
 
-    const results: { title: string; category: string; page: PageId; targetTab?: string }[] = [];
+    const results: { title: string; category: string; page: PageId; targetTab?: string; articleId?: string }[] = [];
 
-    // Search in articles
-    RECENT_ARTICLES.forEach(a => {
-      if (a.title.toLowerCase().includes(q) || a.summary.toLowerCase().includes(q)) {
-        results.push({ title: a.title, category: `Artigo • ${a.tag}`, page: a.category, targetTab: a.targetTab });
+    // Search in deep articles
+    DETAILED_ARTICLES.forEach(a => {
+      if (
+        a.title.toLowerCase().includes(q) ||
+        a.subtitle.toLowerCase().includes(q) ||
+        a.summary.toLowerCase().includes(q) ||
+        a.tag.toLowerCase().includes(q)
+      ) {
+        results.push({
+          title: a.title,
+          category: `Artigo Completo • ${a.tag}`,
+          page: 'article',
+          articleId: a.id
+        });
       }
     });
+
+    // Search in Decision Matrix & Institutional
+    if ('matriz de decisão arquitetura recomendada calculadora'.includes(q)) {
+      results.push({
+        title: 'Matriz de Decisão Arquitetural (Calculadora Interativa)',
+        category: 'Ferramenta',
+        page: 'decision-matrix'
+      });
+    }
+    if ('sobre eduardo lessa autor metodologia eeat contato'.includes(q)) {
+      results.push({
+        title: 'Sobre o Autor (Eduardo Lessa) & Metodologia E-E-A-T',
+        category: 'Institucional',
+        page: 'about'
+      });
+    }
 
     // Search in Frontend topics
     FRONTEND_COMPARISONS.forEach(f => {
@@ -171,8 +218,8 @@ export default function App() {
 
           {/* Navigation Links */}
           <nav className="p-4 space-y-6 flex-1 overflow-y-auto text-sm">
-            {/* Home Link */}
-            <div>
+            {/* Home & Core Tools */}
+            <div className="space-y-1.5">
               <button
                 id="nav-home-btn"
                 onClick={() => navigateTo('home')}
@@ -184,6 +231,42 @@ export default function App() {
               >
                 <Layout size={18} />
                 <span>Início / Destaques</span>
+              </button>
+
+              <button
+                id="nav-articles-btn"
+                onClick={() => navigateTo('articles')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                  currentPage === 'articles' || currentPage === 'article'
+                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 font-bold border border-cyan-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <BookOpen size={18} />
+                  <span>Artigos Técnicos</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono font-bold">
+                  6 Deep Dives
+                </span>
+              </button>
+
+              <button
+                id="nav-matrix-btn"
+                onClick={() => navigateTo('decision-matrix')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                  currentPage === 'decision-matrix'
+                    ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/10 text-purple-300 font-bold border border-purple-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Compass size={18} className="text-purple-400" />
+                  <span>Matriz de Decisão</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">
+                  Novo
+                </span>
               </button>
             </div>
 
@@ -286,6 +369,51 @@ export default function App() {
                   }`}
                 >
                   <span>Otimização Relacional</span>
+                  <ChevronRight size={14} className="opacity-40" />
+                </button>
+              </div>
+            </div>
+
+            {/* Group 4: Institucional & E-E-A-T */}
+            <div className="space-y-1.5 pt-2 border-t border-slate-800/60">
+              <div className="flex items-center justify-between px-3 py-1">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <ShieldCheck size={14} className="text-blue-400" />
+                  Institucional
+                </span>
+              </div>
+              <div className="space-y-0.5">
+                <button
+                  onClick={() => navigateTo('about')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${
+                    currentPage === 'about'
+                      ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                  }`}
+                >
+                  <span>Sobre o Autor (E-E-A-T)</span>
+                  <ChevronRight size={14} className="opacity-40" />
+                </button>
+                <button
+                  onClick={() => navigateTo('editorial')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${
+                    currentPage === 'editorial'
+                      ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                  }`}
+                >
+                  <span>Diretrizes Editoriais</span>
+                  <ChevronRight size={14} className="opacity-40" />
+                </button>
+                <button
+                  onClick={() => navigateTo('contact')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${
+                    currentPage === 'contact'
+                      ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                  }`}
+                >
+                  <span>Fale Conosco</span>
                   <ChevronRight size={14} className="opacity-40" />
                 </button>
               </div>
@@ -489,10 +617,10 @@ export default function App() {
 
                   {/* Grid com os 6 cards de artigos */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {RECENT_ARTICLES.map((article) => (
+                    {DETAILED_ARTICLES.map((article) => (
                       <div
                         key={article.id}
-                        onClick={() => navigateTo(article.category, article.targetTab)}
+                        onClick={() => openArticle(article.id)}
                         className={`group p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                           theme === 'dark'
                             ? 'bg-slate-900/90 border-slate-800 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/10'
@@ -529,11 +657,35 @@ export default function App() {
                         </div>
 
                         <div className="pt-5 mt-4 border-t border-slate-800/60 flex items-center justify-between text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform">
-                          <span>Ver comparação completa</span>
-                          <ArrowUpRight size={15} />
+                          <span>Ler Artigo Completo</span>
+                          <ArrowRight size={15} />
                         </div>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Banner Teaser da Matriz de Decisão Arquitetural */}
+                  <div className="p-8 rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-slate-900 to-cyan-950/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
+                    <div className="space-y-2 max-w-xl">
+                      <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full">
+                        <Compass size={14} />
+                        <span>Nova Ferramenta Interativa</span>
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-black text-white">
+                        Indeciso sobre qual arquitetura adotar?
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                        Experimente nossa <strong>Matriz de Decisão Arquitetural</strong>. Informe o perfil da equipe, tipo de produto e volume de requisições para receber um parecer técnico embasado.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => navigateTo('decision-matrix')}
+                      className="px-6 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-400 hover:to-cyan-400 text-white shadow-lg shadow-purple-500/20 transition-all cursor-pointer flex items-center gap-2 shrink-0"
+                    >
+                      <span>Abrir Calculadora Arquitetural</span>
+                      <ArrowRight size={14} />
+                    </button>
                   </div>
                 </div>
               </section>
@@ -996,38 +1148,235 @@ export default function App() {
                 <AdUnit slot="7788990011" format="rectangle" label="AdSense • Engenharia de Dados" />
               </section>
             )}
+
+            {/* ============================================================== */}
+            {/* PÁGINA 4: LISTA DE ARTIGOS TÉCNICOS (Deep Dives) */}
+            {/* ============================================================== */}
+            {currentPage === 'articles' && (
+              <section className="space-y-8 animate-in fade-in duration-300">
+                <header className="border-b border-slate-800/80 pb-6 space-y-2">
+                  <div className="inline-flex items-center gap-2 text-xs font-mono uppercase font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
+                    <BookOpen size={14} />
+                    <span>Repositório de Análises Profundas</span>
+                  </div>
+                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+                    Artigos Técnicos & Guias de Engenharia
+                  </h1>
+                  <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-3xl">
+                    Estudos aprofundados sobre arquitetura de software, benchmarks de latência, migrações de tecnologia e lições aprendidas em escala de produção.
+                  </p>
+                </header>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {DETAILED_ARTICLES.map((art) => (
+                    <div
+                      key={art.id}
+                      onClick={() => openArticle(art.id)}
+                      className="group p-6 sm:p-7 rounded-2xl border border-slate-800 bg-slate-900/80 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/10 transition-all cursor-pointer flex flex-col justify-between"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="px-2.5 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                            {art.tag}
+                          </span>
+                          <span className="text-slate-500 font-mono text-[11px] flex items-center gap-1">
+                            <Clock size={11} />
+                            {art.readingTime}
+                          </span>
+                        </div>
+
+                        <h2 className="text-lg sm:text-xl font-bold text-white group-hover:text-cyan-400 transition-colors leading-snug">
+                          {art.title}
+                        </h2>
+
+                        <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
+                          {art.summary}
+                        </p>
+                      </div>
+
+                      <div className="pt-5 mt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform">
+                        <span>Ler artigo completo</span>
+                        <ArrowRight size={14} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <AdUnit slot="1234554321" format="auto" label="Espaço Patrocinado • Google AdSense" />
+              </section>
+            )}
+
+            {/* ============================================================== */}
+            {/* PÁGINA 5: LEITOR DE ARTIGO INDIVIDUAL (ArticleReader) */}
+            {/* ============================================================== */}
+            {currentPage === 'article' && (
+              <ArticleReader
+                article={DETAILED_ARTICLES.find(a => a.id === selectedArticleId) || DETAILED_ARTICLES[0]}
+                theme={theme}
+                onBack={() => navigateTo('home')}
+                onNavigateToArticle={openArticle}
+                onNavigateToPage={navigateTo}
+              />
+            )}
+
+            {/* ============================================================== */}
+            {/* PÁGINA 6: MATRIZ DE DECISÃO ARQUITETURAL */}
+            {/* ============================================================== */}
+            {currentPage === 'decision-matrix' && (
+              <DecisionMatrixView onNavigateToPage={navigateTo} />
+            )}
+
+            {/* ============================================================== */}
+            {/* PÁGINA 7: SOBRE O AUTOR & E-E-A-T */}
+            {/* ============================================================== */}
+            {currentPage === 'about' && (
+              <AboutView onNavigateToContact={() => navigateTo('contact')} />
+            )}
+
+            {/* ============================================================== */}
+            {/* PÁGINA 8: DIRETRIZES EDITORIAIS */}
+            {/* ============================================================== */}
+            {currentPage === 'editorial' && (
+              <EditorialView />
+            )}
+
+            {/* ============================================================== */}
+            {/* PÁGINA 9: FALE CONOSCO & CONTATO */}
+            {/* ============================================================== */}
+            {currentPage === 'contact' && (
+              <ContactView />
+            )}
+
+            {/* ============================================================== */}
+            {/* PÁGINA 10: TERMOS DE USO */}
+            {/* ============================================================== */}
+            {currentPage === 'terms' && (
+              <TermsView />
+            )}
           </div>
 
-          {/* FOOTER DO BLOG */}
+          {/* FOOTER DO BLOG ENRIQUECIDO COM E-E-A-T */}
           <footer
             className={`mt-16 border-t py-12 px-6 sm:px-12 ${
               theme === 'dark'
-                ? 'border-slate-900 bg-slate-950 text-slate-500'
-                : 'border-slate-200 bg-white text-slate-400'
+                ? 'border-slate-900 bg-slate-950 text-slate-400'
+                : 'border-slate-200 bg-white text-slate-600'
             }`}
           >
-            <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
-                  <Braces size={18} />
+            <div className="max-w-6xl mx-auto space-y-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-slate-800/80">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-white shadow-md">
+                    <Braces size={20} />
+                  </div>
+                  <div>
+                    <span className="font-extrabold text-white text-base block">
+                      CodeCompare • Blog Técnico Full-Stack
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      Fundado e mantido por Eduardo Lessa. Aprenda por comparação, não por decoreba.
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-bold text-slate-200 text-sm block">
-                    CodeCompare • Blog Técnico Full-Stack
-                  </span>
-                  <span className="text-xs text-slate-500">
-                    Aprenda por comparação, não por decoreba.
-                  </span>
+
+                <div className="flex items-center gap-3 text-xs font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Conteúdo 100% Autoral e Verificado</span>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6 text-xs">
-                <button
-                  onClick={() => setShowPrivacyModal(true)}
-                  className="hover:text-cyan-400 transition-colors cursor-pointer"
-                >
-                  Política de Privacidade (LGPD)
-                </button>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs">
+                <div className="space-y-2">
+                  <span className="font-bold text-white uppercase font-mono tracking-wider block text-[11px]">
+                    Navegação Core
+                  </span>
+                  <ul className="space-y-1.5 text-slate-400">
+                    <li>
+                      <button onClick={() => navigateTo('home')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Início / Destaques
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('articles')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Artigos Técnicos (Deep Dives)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('decision-matrix')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Matriz de Decisão Arquitetural
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="font-bold text-white uppercase font-mono tracking-wider block text-[11px]">
+                    Comparações de Código
+                  </span>
+                  <ul className="space-y-1.5 text-slate-400">
+                    <li>
+                      <button onClick={() => navigateTo('frontend')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Frontend (Angular, Vue, React)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('backend')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Backend (.NET, Java, Python, Go)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('database')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Banco de Dados (NoSQL & SQL)
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="font-bold text-white uppercase font-mono tracking-wider block text-[11px]">
+                    Institucional (E-E-A-T)
+                  </span>
+                  <ul className="space-y-1.5 text-slate-400">
+                    <li>
+                      <button onClick={() => navigateTo('about')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Sobre o Autor (Eduardo Lessa)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('editorial')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Diretrizes Editoriais
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('contact')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Fale Conosco & Erratas
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="font-bold text-white uppercase font-mono tracking-wider block text-[11px]">
+                    Transparência Legal
+                  </span>
+                  <ul className="space-y-1.5 text-slate-400">
+                    <li>
+                      <button onClick={() => setShowPrivacyModal(true)} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Política de Privacidade (LGPD)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('terms')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Termos de Uso & Licença MIT
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-900 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] text-slate-400">
+                <p>© {new Date().getFullYear()} CodeCompare. Todos os direitos reservados. Códigos sob licença permissiva MIT.</p>
+                <p>Eduardo Lessa • Engenheiro de Software Full-Stack</p>
               </div>
             </div>
           </footer>
