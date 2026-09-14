@@ -68,6 +68,64 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
+  // Sync route from URL Hash on mount and hashchange
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace(/^#/, '');
+      if (!hash) return;
+
+      if (hash.startsWith('artigo-')) {
+        const artId = hash.replace('artigo-', '');
+        const found = DETAILED_ARTICLES.find(a => a.id === artId);
+        if (found) {
+          setSelectedArticleId(found.id);
+          setCurrentPage('article');
+          return;
+        }
+      }
+
+      switch (hash) {
+        case 'artigos':
+          setCurrentPage('articles');
+          break;
+        case 'matriz-decisao':
+          setCurrentPage('decision-matrix');
+          break;
+        case 'sobre':
+          setCurrentPage('about');
+          break;
+        case 'diretrizes-editoriais':
+          setCurrentPage('editorial');
+          break;
+        case 'contato':
+          setCurrentPage('contact');
+          break;
+        case 'termos':
+          setCurrentPage('terms');
+          break;
+        case 'frontend':
+          setCurrentPage('frontend');
+          break;
+        case 'backend':
+          setCurrentPage('backend');
+          break;
+        case 'database':
+          setCurrentPage('database');
+          break;
+        case 'home':
+        case '':
+          setCurrentPage('home');
+          break;
+        default:
+          break;
+      }
+    };
+
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
   // Toggle and persist theme
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
@@ -84,6 +142,25 @@ export default function App() {
     } else if (page === 'database' && subTab) {
       setActiveDbTab(subTab as DatabaseTab);
     }
+
+    // Update URL hash
+    const hashMap: Record<PageId, string> = {
+      home: '',
+      articles: 'artigos',
+      article: `artigo-${selectedArticleId}`,
+      'decision-matrix': 'matriz-decisao',
+      about: 'sobre',
+      editorial: 'diretrizes-editoriais',
+      contact: 'contato',
+      terms: 'termos',
+      frontend: 'frontend',
+      backend: 'backend',
+      database: 'database'
+    };
+    if (window.location.hash !== `#${hashMap[page]}`) {
+      window.history.pushState(null, '', hashMap[page] ? `#${hashMap[page]}` : window.location.pathname);
+    }
+
     setSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -91,6 +168,7 @@ export default function App() {
   const openArticle = (articleId: string) => {
     setSelectedArticleId(articleId);
     setCurrentPage('article');
+    window.history.pushState(null, '', `#artigo-${articleId}`);
     setSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

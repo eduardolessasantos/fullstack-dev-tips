@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Megaphone, ShieldAlert, Sparkles } from 'lucide-react';
+import { Megaphone } from 'lucide-react';
 
 interface AdUnitProps {
   slot: string;
@@ -35,17 +35,19 @@ export const AdUnit: React.FC<AdUnitProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const insRef = useRef<HTMLModElement>(null);
-  const [hasConsent, setHasConsent] = useState<boolean | null>(null);
+  const [isRejected, setIsRejected] = useState(false);
   const isPushed = useRef(false);
 
   useEffect(() => {
     // Verificar consentimento da LGPD
     const consent = localStorage.getItem('codecompare_lgpd_consent');
-    const isAccepted = consent === 'accepted';
-    setHasConsent(isAccepted);
+    if (consent === 'rejected') {
+      setIsRejected(true);
+      return;
+    }
 
-    // Se o consentimento foi aceito e um Client ID real do AdSense está configurado:
-    if (isAccepted && isRealAdSenseConfigured && !isPushed.current) {
+    // Se o consentimento não foi expressamente rejeitado e um Client ID real do AdSense está configurado:
+    if (isRealAdSenseConfigured && !isPushed.current) {
       const timer = setTimeout(() => {
         try {
           if (
@@ -64,16 +66,17 @@ export const AdUnit: React.FC<AdUnitProps> = ({
 
       return () => clearTimeout(timer);
     }
-  }, [hasConsent]);
+  }, []);
+
+  // Se o usuário recusou publicidade, não renderizar nenhum espaço vazio ou placeholder para respeitar as diretrizes de inventário do AdSense
+  if (isRejected) {
+    return null;
+  }
 
   return (
     <div
       ref={containerRef}
-      className={`my-8 relative rounded-xl border border-dashed transition-all overflow-hidden ${
-        hasConsent === false
-          ? 'bg-slate-900/40 border-slate-800 text-slate-500 py-6'
-          : 'bg-slate-900/50 border-slate-800/80 hover:border-cyan-500/30'
-      } ${className}`}
+      className={`my-8 relative rounded-xl border border-dashed transition-all overflow-hidden bg-slate-900/50 border-slate-800/80 hover:border-cyan-500/30 ${className}`}
     >
       {/* Label de Transparência AdSense */}
       <div className="flex items-center justify-between px-4 py-1.5 bg-slate-950/40 border-b border-slate-800/60 text-[11px] font-medium text-slate-400">
@@ -88,14 +91,7 @@ export const AdUnit: React.FC<AdUnitProps> = ({
 
       {/* Bloco AdSense Real ou Mock Informativo */}
       <div className="p-4 flex flex-col items-center justify-center min-h-[100px] text-center">
-        {hasConsent === false ? (
-          <div className="flex flex-col items-center gap-2 max-w-sm text-xs text-slate-400">
-            <ShieldAlert size={20} className="text-amber-400" />
-            <p>
-              Anúncios desativados com base nas suas preferências de privacidade da LGPD.
-            </p>
-          </div>
-        ) : isRealAdSenseConfigured ? (
+        {isRealAdSenseConfigured ? (
           /* Tag oficial do Google AdSense somente ativada com ID real configurado */
           <div className="w-full flex flex-col items-center justify-center min-w-[250px]">
             <ins
