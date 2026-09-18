@@ -1,10 +1,13 @@
 User-agent: *
+Allow: /ads.txt
 Allow: /
 
 User-agent: Mediapartners-Google
+Allow: /ads.txt
 Allow: /
 
 User-agent: AdsBot-Google
+Allow: /ads.txt
 Allow: /
 
 Sitemap: https://fullstack-blog-edulessa.vercel.app/sitemap.xml
