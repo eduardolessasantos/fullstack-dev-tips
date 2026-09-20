@@ -63,9 +63,10 @@
                 Blog técnico pragmático fundado por <strong>Eduardo Lessa</strong>. Comparativos rigorosos entre frameworks frontend, linguagens backend e bancos de dados com métricas reais de produção, latência p99 e consumo de memória.
               </p>
             </div>
-            <nav style="display: flex; gap: 16px; font-size: 14px; font-weight: 600;">
+            <nav style="display: flex; gap: 16px; font-size: 14px; font-weight: 600; flex-wrap: wrap;">
               <a href="#artigos" style="color: #38bdf8; text-decoration: none;">Artigos Técnicos</a>
               <a href="#matriz-decisao" style="color: #c084fc; text-decoration: none;">Matriz de Decisão</a>
+              <a href="#pontos-de-funcao" style="color: #38bdf8; text-decoration: none;">Pontos de Função (APF)</a>
               <a href="#sobre" style="color: #94a3b8; text-decoration: none;">Sobre o Autor</a>
               <a href="#diretrizes-editoriais" style="color: #94a3b8; text-decoration: none;">Diretrizes Editoriais</a>
               <a href="#contato" style="color: #94a3b8; text-decoration: none;">Contato</a>
@@ -159,6 +160,94 @@
                 Análise criteriosa de custos e benefícios: quando o Server-Side Rendering justifica a complexidade operacional adicional, impacto nas métricas Core Web Vitals (LCP, INP, TTFB) e estratégias de hidratação parcial.
               </p>
             </article>
+          </section>
+
+          <!-- Seção Análise de Pontos de Função (APF / IFPUG) -->
+          <section id="pontos-de-funcao" style="margin-bottom: 48px; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 24px;">
+            <div style="margin-bottom: 16px;">
+              <span style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase;">
+                Métricas de Engenharia • IFPUG CPM 4.3.1 • ISO/IEC 20926
+              </span>
+              <h2 style="font-size: 24px; font-weight: 800; color: #ffffff; margin: 6px 0 8px;">
+                Análise de Pontos de Função (APF) & Dimensionamento de Software
+              </h2>
+              <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+                Dimensionamento do tamanho funcional das aplicações independentemente da tecnologia adotada, correlacionado com benchmarks ISBSG de produtividade (Horas por Ponto de Função - h/PF), linhas de código equivalentes (SLOC/PF) e esforço de manutenção.
+              </p>
+            </div>
+
+            <h3 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">
+              Matriz Canônica de Pesos Funcionais (IFPUG)
+            </h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #cbd5e1; margin-bottom: 20px;">
+              <thead>
+                <tr style="border-bottom: 1px solid #334155; text-align: left; color: #94a3b8;">
+                  <th style="padding: 8px;">Elemento</th>
+                  <th style="padding: 8px;">Descrição Funcional</th>
+                  <th style="padding: 8px; text-align: center;">Baixa</th>
+                  <th style="padding: 8px; text-align: center;">Média</th>
+                  <th style="padding: 8px; text-align: center;">Alta</th>
+                  <th style="padding: 8px;">Exemplo na Stack do Portal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid #1e293b;">
+                  <td style="padding: 8px; font-weight: 700; color: #38bdf8;">ALI</td>
+                  <td style="padding: 8px;">Arquivo Lógico Interno (ILF)</td>
+                  <td style="padding: 8px; text-align: center; color: #34d399;">7 PF</td>
+                  <td style="padding: 8px; text-align: center; color: #fbbf24;">10 PF</td>
+                  <td style="padding: 8px; text-align: center; color: #f87171;">15 PF</td>
+                  <td style="padding: 8px;">Tabelas relacionais em PostgreSQL / Coleções em MongoDB</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #1e293b;">
+                  <td style="padding: 8px; font-weight: 700; color: #818cf8;">AIE</td>
+                  <td style="padding: 8px;">Arquivo de Interface Externa (EIF)</td>
+                  <td style="padding: 8px; text-align: center; color: #34d399;">5 PF</td>
+                  <td style="padding: 8px; text-align: center; color: #fbbf24;">7 PF</td>
+                  <td style="padding: 8px; text-align: center; color: #f87171;">10 PF</td>
+                  <td style="padding: 8px;">Gateways de pagamento, Provedores OAuth2, APIs de terceiros</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #1e293b;">
+                  <td style="padding: 8px; font-weight: 700; color: #fbbf24;">EE</td>
+                  <td style="padding: 8px;">Entrada Externa (EI)</td>
+                  <td style="padding: 8px; text-align: center; color: #34d399;">3 PF</td>
+                  <td style="padding: 8px; text-align: center; color: #fbbf24;">4 PF</td>
+                  <td style="padding: 8px; text-align: center; color: #f87171;">6 PF</td>
+                  <td style="padding: 8px;">Endpoints POST / PUT / DELETE em FastAPI, .NET 8 ou Spring Boot</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #1e293b;">
+                  <td style="padding: 8px; font-weight: 700; color: #f87171;">SE</td>
+                  <td style="padding: 8px;">Saída Externa (EO)</td>
+                  <td style="padding: 8px; text-align: center; color: #34d399;">4 PF</td>
+                  <td style="padding: 8px; text-align: center; color: #fbbf24;">5 PF</td>
+                  <td style="padding: 8px; text-align: center; color: #f87171;">7 PF</td>
+                  <td style="padding: 8px;">Relatórios agregados, extratos com conciliação contábil, webhooks</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px; font-weight: 700; color: #34d399;">CE</td>
+                  <td style="padding: 8px;">Consulta Externa (EQ)</td>
+                  <td style="padding: 8px; text-align: center; color: #34d399;">3 PF</td>
+                  <td style="padding: 8px; text-align: center; color: #fbbf24;">4 PF</td>
+                  <td style="padding: 8px; text-align: center; color: #f87171;">6 PF</td>
+                  <td style="padding: 8px;">Endpoints GET com paginação e busca por índices</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">
+              Taxa de Entrega e Produtividade por Tecnologia (Horas / Ponto de Função)
+            </h3>
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 12px;">
+              Baseado em métricas consolidadas ISBSG (International Software Benchmarking Standards Group):
+            </p>
+            <ul style="color: #cbd5e1; font-size: 13px; line-height: 1.8; margin-left: 20px;">
+              <li><strong>FastAPI (Python 3.12):</strong> Média de 6.5 h/PF (~38 SLOC/PF) — Alta produtividade com validação Pydantic e OpenAPI automático.</li>
+              <li><strong>.NET 8 Minimal APIs (C# 12):</strong> Média de 8.5 h/PF (~52 SLOC/PF) — Equilíbrio superior entre segurança de tipos, EF Core 8 e performance de runtime.</li>
+              <li><strong>Spring Boot 3 (Java 21):</strong> Média de 11.0 h/PF (~68 SLOC/PF) — Robusteza corporativa e conformidade estrita com maior volume de boilerplate.</li>
+              <li><strong>Vue 3.4 (Composition API):</strong> Média de 7.0 h/PF (~42 SLOC/PF) — Reatividade granular veloz e SFC ergonômico.</li>
+              <li><strong>React 18 / 19 (TypeScript):</strong> Média de 8.5 h/PF (~55 SLOC/PF) — Ecossistema gigante com necessidade de governança de re-render.</li>
+              <li><strong>Angular 17+ (Signals):</strong> Média de 9.5 h/PF (~62 SLOC/PF) — Arquitetura fortemente estruturada com baixo custo de manutenção a longo prazo.</li>
+            </ul>
           </section>
 
           <!-- Seção Sobre o Autor (E-E-A-T) -->

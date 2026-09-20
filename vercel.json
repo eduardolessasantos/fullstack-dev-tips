@@ -1,4 +1,5 @@
 {
+  "cleanUrls": false,
   "headers": [
     {
       "source": "/ads.txt",
@@ -9,7 +10,7 @@
         },
         {
           "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=3600"
+          "value": "public, max-age=0, must-revalidate"
         },
         {
           "key": "Access-Control-Allow-Origin",
@@ -26,7 +27,7 @@
         },
         {
           "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=3600"
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },
@@ -46,19 +47,7 @@
   ],
   "rewrites": [
     {
-      "source": "/ads.txt",
-      "destination": "/ads.txt"
-    },
-    {
-      "source": "/robots.txt",
-      "destination": "/robots.txt"
-    },
-    {
-      "source": "/sitemap.xml",
-      "destination": "/sitemap.xml"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!ads\\.txt|robots\\.txt|sitemap\\.xml).*)",
       "destination": "/index.html"
     }
   ]

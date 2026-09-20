@@ -6,6 +6,7 @@ export type PageId =
   | 'backend'
   | 'database'
   | 'decision-matrix'
+  | 'function-points'
   | 'about'
   | 'editorial'
   | 'contact'

@@ -29,7 +29,8 @@ import {
   Mail,
   Scale,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Calculator
 } from 'lucide-react';
 import { PageId, FrontendFramework, BackendLanguage, DatabaseTab } from './types.ts';
 import { FRONTEND_COMPARISONS } from './data/frontendData.ts';
@@ -46,6 +47,7 @@ import { EditorialView } from './components/EditorialView.tsx';
 import { ContactView } from './components/ContactView.tsx';
 import { TermsView } from './components/TermsView.tsx';
 import { DecisionMatrixView } from './components/DecisionMatrixView.tsx';
+import { FunctionPointsView } from './components/FunctionPointsView.tsx';
 
 export default function App() {
   // Theme state with local persistence
@@ -90,6 +92,9 @@ export default function App() {
           break;
         case 'matriz-decisao':
           setCurrentPage('decision-matrix');
+          break;
+        case 'pontos-de-funcao':
+          setCurrentPage('function-points');
           break;
         case 'sobre':
           setCurrentPage('about');
@@ -149,6 +154,7 @@ export default function App() {
       articles: 'artigos',
       article: `artigo-${selectedArticleId}`,
       'decision-matrix': 'matriz-decisao',
+      'function-points': 'pontos-de-funcao',
       about: 'sobre',
       editorial: 'diretrizes-editoriais',
       contact: 'contato',
@@ -203,6 +209,13 @@ export default function App() {
         title: 'Matriz de Decisão Arquitetural (Calculadora Interativa)',
         category: 'Ferramenta',
         page: 'decision-matrix'
+      });
+    }
+    if ('pontos de função apf ifpug nesma dimensionamento estimativa sloc tabela produtividade'.includes(q)) {
+      results.push({
+        title: 'Análise de Pontos de Função (APF) & Dimensionamento de Software',
+        category: 'Engenharia',
+        page: 'function-points'
       });
     }
     if ('sobre eduardo lessa autor metodologia eeat contato'.includes(q)) {
@@ -344,6 +357,24 @@ export default function App() {
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">
                   Novo
+                </span>
+              </button>
+
+              <button
+                id="nav-function-points-btn"
+                onClick={() => navigateTo('function-points')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                  currentPage === 'function-points'
+                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-300 font-bold border border-cyan-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Calculator size={18} className="text-cyan-400" />
+                  <span>Pontos de Função</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono font-bold">
+                  APF
                 </span>
               </button>
             </div>
@@ -669,6 +700,13 @@ export default function App() {
                         <Database size={16} />
                         <span>Otimizações SQL</span>
                       </button>
+                      <button
+                        onClick={() => navigateTo('function-points')}
+                        className="px-6 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-slate-900 to-cyan-950/60 hover:border-cyan-400 text-cyan-300 border border-cyan-500/30 transition-all cursor-pointer flex items-center gap-2"
+                      >
+                        <Calculator size={16} className="text-cyan-400" />
+                        <span>Pontos de Função (APF)</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -762,6 +800,30 @@ export default function App() {
                       className="px-6 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-400 hover:to-cyan-400 text-white shadow-lg shadow-purple-500/20 transition-all cursor-pointer flex items-center gap-2 shrink-0"
                     >
                       <span>Abrir Calculadora Arquitetural</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+
+                  {/* Banner Teaser de Pontos de Função (APF) */}
+                  <div className="p-8 rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-slate-900 to-blue-950/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
+                    <div className="space-y-2 max-w-xl">
+                      <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full">
+                        <Calculator size={14} />
+                        <span>Métricas Normativas • IFPUG / NESMA</span>
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-black text-white">
+                        Precisa estimar prazos, esforço e horas por Ponto de Função?
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                        Explore nossa seção de <strong>Análise de Pontos de Função (APF)</strong>. Compare taxas de produtividade (Horas/PF), densidade de bugs e dimensione o prazo de entrega nas stacks de .NET 8, FastAPI, Spring Boot, React, Vue e Angular.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => navigateTo('function-points')}
+                      className="px-6 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/25 transition-all cursor-pointer flex items-center gap-2 shrink-0"
+                    >
+                      <span>Simular Pontos de Função</span>
                       <ArrowRight size={14} />
                     </button>
                   </div>
@@ -1305,6 +1367,13 @@ export default function App() {
             )}
 
             {/* ============================================================== */}
+            {/* PÁGINA 6.5: ANÁLISE DE PONTOS DE FUNÇÃO (APF) */}
+            {/* ============================================================== */}
+            {currentPage === 'function-points' && (
+              <FunctionPointsView />
+            )}
+
+            {/* ============================================================== */}
             {/* PÁGINA 7: SOBRE O AUTOR & E-E-A-T */}
             {/* ============================================================== */}
             {currentPage === 'about' && (
@@ -1382,6 +1451,12 @@ export default function App() {
                     <li>
                       <button onClick={() => navigateTo('decision-matrix')} className="hover:text-cyan-400 transition-colors cursor-pointer">
                         Matriz de Decisão Arquitetural
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('function-points')} className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1.5">
+                        <span>Pontos de Função (APF)</span>
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono font-bold">Novo</span>
                       </button>
                     </li>
                   </ul>
