@@ -30,7 +30,8 @@ import {
   Scale,
   ArrowRight,
   CheckCircle2,
-  Calculator
+  Calculator,
+  Cloud
 } from 'lucide-react';
 import { PageId, FrontendFramework, BackendLanguage, DatabaseTab } from './types.ts';
 import { FRONTEND_COMPARISONS } from './data/frontendData.ts';
@@ -48,6 +49,7 @@ import { ContactView } from './components/ContactView.tsx';
 import { TermsView } from './components/TermsView.tsx';
 import { DecisionMatrixView } from './components/DecisionMatrixView.tsx';
 import { FunctionPointsView } from './components/FunctionPointsView.tsx';
+import { CloudView } from './components/CloudView.tsx';
 
 export default function App() {
   // Theme state with local persistence
@@ -95,6 +97,10 @@ export default function App() {
           break;
         case 'pontos-de-funcao':
           setCurrentPage('function-points');
+          break;
+        case 'cloud':
+        case 'cloud-aws-azure':
+          setCurrentPage('cloud');
           break;
         case 'sobre':
           setCurrentPage('about');
@@ -155,6 +161,7 @@ export default function App() {
       article: `artigo-${selectedArticleId}`,
       'decision-matrix': 'matriz-decisao',
       'function-points': 'pontos-de-funcao',
+      cloud: 'cloud',
       about: 'sobre',
       editorial: 'diretrizes-editoriais',
       contact: 'contato',
@@ -216,6 +223,13 @@ export default function App() {
         title: 'Análise de Pontos de Função (APF) & Dimensionamento de Software',
         category: 'Engenharia',
         page: 'function-points'
+      });
+    }
+    if ('cloud nuvem aws azure s3 blob storage ebs disk ecs container apps app runner app service codepipeline github actions lambda functions serverless cicd deploy'.includes(q)) {
+      results.push({
+        title: 'Comparativo Cloud: AWS vs Azure (Storage, Deploy, CI/CD & Functions)',
+        category: 'Infraestrutura',
+        page: 'cloud'
       });
     }
     if ('sobre eduardo lessa autor metodologia eeat contato'.includes(q)) {
@@ -375,6 +389,24 @@ export default function App() {
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono font-bold">
                   APF
+                </span>
+              </button>
+
+              <button
+                id="nav-cloud-btn"
+                onClick={() => navigateTo('cloud')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                  currentPage === 'cloud'
+                    ? 'bg-gradient-to-r from-amber-500/20 via-slate-800 to-sky-500/20 text-amber-300 font-bold border border-amber-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Cloud size={18} className="text-amber-400" />
+                  <span>Cloud: AWS vs Azure</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
+                  Novo
                 </span>
               </button>
             </div>
@@ -707,6 +739,13 @@ export default function App() {
                         <Calculator size={16} className="text-cyan-400" />
                         <span>Pontos de Função (APF)</span>
                       </button>
+                      <button
+                        onClick={() => navigateTo('cloud')}
+                        className="px-6 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-950/40 via-slate-900 to-sky-950/40 hover:border-amber-400 text-amber-300 border border-amber-500/30 transition-all cursor-pointer flex items-center gap-2"
+                      >
+                        <Cloud size={16} className="text-amber-400" />
+                        <span>Cloud: AWS vs Azure</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -824,6 +863,30 @@ export default function App() {
                       className="px-6 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/25 transition-all cursor-pointer flex items-center gap-2 shrink-0"
                     >
                       <span>Simular Pontos de Função</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+
+                  {/* Banner Teaser de Cloud: AWS vs Azure */}
+                  <div className="p-8 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-950/40 via-slate-900 to-sky-950/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
+                    <div className="space-y-2 max-w-xl">
+                      <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full">
+                        <Cloud size={14} />
+                        <span>Infraestrutura & Nuvem • AWS vs Azure</span>
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-black text-white">
+                        Qual nuvem escolher para Armazenamento, Containers, CI/CD e Functions?
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                        Compare lado a lado <strong>Amazon S3 vs Azure Blob</strong>, <strong>EBS vs Managed Disks</strong>, <strong>ECS vs Container Apps</strong>, <strong>CodePipeline vs GitHub Actions</strong> e <strong>AWS Lambda vs Azure Functions</strong> com benchmarks de latência e simulador por tipo de workload.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => navigateTo('cloud')}
+                      className="px-6 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-amber-500 via-orange-500 to-sky-500 hover:from-amber-400 hover:to-sky-400 text-slate-950 font-black shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-2 shrink-0"
+                    >
+                      <span>Explorar Comparativo Cloud</span>
                       <ArrowRight size={14} />
                     </button>
                   </div>
@@ -1374,6 +1437,13 @@ export default function App() {
             )}
 
             {/* ============================================================== */}
+            {/* PÁGINA 6.8: COMPARATIVO CLOUD: AWS VS AZURE */}
+            {/* ============================================================== */}
+            {currentPage === 'cloud' && (
+              <CloudView onNavigateToPage={navigateTo} />
+            )}
+
+            {/* ============================================================== */}
             {/* PÁGINA 7: SOBRE O AUTOR & E-E-A-T */}
             {/* ============================================================== */}
             {currentPage === 'about' && (
@@ -1459,6 +1529,12 @@ export default function App() {
                         <span className="text-[9px] px-1 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono font-bold">Novo</span>
                       </button>
                     </li>
+                    <li>
+                      <button onClick={() => navigateTo('cloud')} className="hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1.5">
+                        <span>Cloud: AWS vs Azure</span>
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">Novo</span>
+                      </button>
+                    </li>
                   </ul>
                 </div>
 
@@ -1480,6 +1556,11 @@ export default function App() {
                     <li>
                       <button onClick={() => navigateTo('database')} className="hover:text-cyan-400 transition-colors cursor-pointer">
                         Banco de Dados (NoSQL & SQL)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('cloud')} className="hover:text-amber-400 transition-colors cursor-pointer">
+                        Cloud (AWS vs Azure)
                       </button>
                     </li>
                   </ul>

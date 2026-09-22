@@ -1,6 +1,6 @@
 {
   "name": "CodeCompare",
-  "description": "Blog técnico e análises arquiteturais para engenheiros de software: benchmarks de latência, comparativos aprofundados entre frameworks frontend, APIs backend e otimizações de bancos de dados.",
+  "description": "Blog técnico e análises arquiteturais para engenheiros de software: benchmarks de latência, comparativos aprofundados entre frameworks frontend, APIs backend, bancos de dados e provedores Cloud (AWS vs Azure).",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
