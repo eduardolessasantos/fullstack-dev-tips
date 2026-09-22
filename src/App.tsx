@@ -72,14 +72,17 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
-  // Sync route from URL Hash on mount and hashchange
+  // Sync route from URL Hash or Pathname on mount and navigation
   useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash.replace(/^#/, '');
-      if (!hash) return;
+    const handleRoute = () => {
+      let route = window.location.hash.replace(/^#\/?/, '');
+      if (!route) {
+        route = window.location.pathname.replace(/^\//, '');
+      }
+      if (!route) return;
 
-      if (hash.startsWith('artigo-')) {
-        const artId = hash.replace('artigo-', '');
+      if (route.startsWith('artigo/') || route.startsWith('artigo-')) {
+        const artId = route.replace(/^(artigo\/|artigo-)/, '');
         const found = DETAILED_ARTICLES.find(a => a.id === artId);
         if (found) {
           setSelectedArticleId(found.id);
@@ -88,7 +91,7 @@ export default function App() {
         }
       }
 
-      switch (hash) {
+      switch (route) {
         case 'artigos':
           setCurrentPage('articles');
           break;
@@ -114,6 +117,10 @@ export default function App() {
         case 'termos':
           setCurrentPage('terms');
           break;
+        case 'politica-de-privacidade':
+        case 'privacidade':
+          setShowPrivacyModal(true);
+          break;
         case 'frontend':
           setCurrentPage('frontend');
           break;
@@ -132,9 +139,13 @@ export default function App() {
       }
     };
 
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+    handleRoute();
+    window.addEventListener('hashchange', handleRoute);
+    window.addEventListener('popstate', handleRoute);
+    return () => {
+      window.removeEventListener('hashchange', handleRoute);
+      window.removeEventListener('popstate', handleRoute);
+    };
   }, []);
 
   // Toggle and persist theme
@@ -751,7 +762,7 @@ export default function App() {
                 </div>
 
                 {/* AdUnit Horizontal após o Hero */}
-                <AdUnit slot="9876543210" format="horizontal" label="Espaço Patrocinado • Google AdSense" />
+                <AdUnit slot="9876543210" format="horizontal" label="Publicidade" />
 
                 {/* Section Header: 6 Artigos mais recentes */}
                 <div className="space-y-6">
@@ -1047,7 +1058,7 @@ export default function App() {
                   ))}
                 </div>
 
-                <AdUnit slot="1122334455" format="auto" label="Conteúdo Patrocinado • CodeCompare" />
+                <AdUnit slot="1122334455" format="auto" label="Publicidade" />
               </section>
             )}
 
@@ -1180,7 +1191,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <AdUnit slot="4455667788" format="auto" label="Apoie o Projeto • Google AdSense" />
+                <AdUnit slot="4455667788" format="auto" label="Publicidade" />
               </section>
             )}
 
@@ -1348,7 +1359,7 @@ export default function App() {
                   </div>
                 )}
 
-                <AdUnit slot="7788990011" format="rectangle" label="AdSense • Engenharia de Dados" />
+                <AdUnit slot="7788990011" format="rectangle" label="Publicidade" />
               </section>
             )}
 
@@ -1405,7 +1416,7 @@ export default function App() {
                   ))}
                 </div>
 
-                <AdUnit slot="1234554321" format="auto" label="Espaço Patrocinado • Google AdSense" />
+                <AdUnit slot="1234554321" format="auto" label="Publicidade" />
               </section>
             )}
 

@@ -1,92 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#artigos</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/artigos</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#artigo-signals-reactivity</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/artigo/signals-reactivity</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#artigo-dotnet-minimal-apis</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/artigo/net8-vs-fastapi</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#artigo-postgres-vs-mongodb</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/artigo/sql-vs-nosql</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#artigo-redis-caching-patterns</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/artigo/rest-api-cache</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#artigo-clean-arch-fastapi</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/artigo/go-microservices</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#artigo-react-vs-vue-ssr</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/artigo/indices-and-pagination</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#matriz-decisao</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/matriz-decisao</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#pontos-de-funcao</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/pontos-de-funcao</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#cloud</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/cloud</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#sobre</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/sobre</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#diretrizes-editoriais</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/diretrizes-editoriais</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#contato</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/contato</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://fullstack-blog-edulessa.vercel.app/#termos</loc>
-    <lastmod>2024-09-13</lastmod>
+    <loc>https://www.devedulessa.com.br/termos</loc>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.devedulessa.com.br/politica-de-privacidade</loc>
+    <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

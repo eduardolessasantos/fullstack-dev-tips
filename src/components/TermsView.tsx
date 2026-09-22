@@ -76,7 +76,7 @@ export function TermsView() {
         </section>
       </div>
 
-      <AdUnit slot="1122446688" format="auto" label="Espaço Patrocinado • CodeCompare" />
+      <AdUnit slot="1122446688" format="auto" label="Publicidade" />
     </div>
   );
 }

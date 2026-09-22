@@ -26,17 +26,42 @@ export const isRealAdSenseConfigured = Boolean(
   !ADSENSE_CLIENT_ID.includes('XXXX')
 );
 
+// Slots fictícios de desenvolvimento conhecidos que não devem disparar chamadas para o AdSense
+const MOCK_SLOTS = new Set([
+  '9876543210',
+  '1122334455',
+  '4455667788',
+  '7788990011',
+  '1234554321',
+  '3344556677',
+  '5566778899',
+  '9988776655',
+  '4433221100',
+  '9988771122',
+  '7788991122',
+  '7890123456',
+  '9012345678',
+  '1122446688'
+]);
+
 export const AdUnit: React.FC<AdUnitProps> = ({
   slot,
   format = 'auto',
   responsive = true,
-  label = 'Publicidade & Apoio ao Blog',
+  label = 'Publicidade',
   className = ''
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const insRef = useRef<HTMLModElement>(null);
   const [isRejected, setIsRejected] = useState(false);
   const isPushed = useRef(false);
+
+  // Verifica se o slot fornecido é um slot real (não fictício)
+  const isRealSlot = Boolean(
+    slot &&
+    !MOCK_SLOTS.has(slot) &&
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ENABLE_MANUAL_ADS === 'true')
+  );
 
   useEffect(() => {
     // Verificar consentimento da LGPD
@@ -46,8 +71,8 @@ export const AdUnit: React.FC<AdUnitProps> = ({
       return;
     }
 
-    // Se o consentimento não foi expressamente rejeitado e um Client ID real do AdSense está configurado:
-    if (isRealAdSenseConfigured && !isPushed.current) {
+    // Apenas tenta registrar a chamada se for um slot real e configurado
+    if (isRealAdSenseConfigured && isRealSlot && !isPushed.current) {
       const timer = setTimeout(() => {
         try {
           if (
@@ -66,62 +91,46 @@ export const AdUnit: React.FC<AdUnitProps> = ({
 
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isRealSlot]);
 
-  // Se o usuário recusou publicidade, não renderizar nenhum espaço vazio ou placeholder para respeitar as diretrizes de inventário do AdSense
-  if (isRejected) {
+  // Se o usuário recusou publicidade ou se ainda estamos na fase de aprovação com slots fictícios,
+  // não renderizar blocos vazios ou quebrados para manter o layout 100% limpo para o revisor do AdSense
+  // (O AdSense exibirá os anúncios via Anúncios Automáticos / Auto Ads a partir do script no cabeçalho).
+  if (isRejected || !isRealSlot) {
     return null;
   }
 
   return (
     <div
       ref={containerRef}
-      className={`my-8 relative rounded-xl border border-dashed transition-all overflow-hidden bg-slate-900/50 border-slate-800/80 hover:border-cyan-500/30 ${className}`}
+      className={`my-8 relative rounded-xl border transition-all overflow-hidden bg-slate-900/40 border-slate-800/80 ${className}`}
     >
-      {/* Label de Transparência AdSense */}
+      {/* Label de Transparência Oficial AdSense (conforme diretrizes do Google: "Publicidade" ou "Anúncios") */}
       <div className="flex items-center justify-between px-4 py-1.5 bg-slate-950/40 border-b border-slate-800/60 text-[11px] font-medium text-slate-400">
         <span className="flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
           <Megaphone size={12} className="text-cyan-400" />
           {label}
         </span>
-        <span className="text-[10px] text-slate-400 font-mono">
-          Slot: {slot}
-        </span>
       </div>
 
-      {/* Bloco AdSense Real ou Mock Informativo */}
+      {/* Tag oficial do Google AdSense */}
       <div className="p-4 flex flex-col items-center justify-center min-h-[100px] text-center">
-        {isRealAdSenseConfigured ? (
-          /* Tag oficial do Google AdSense somente ativada com ID real configurado */
-          <div className="w-full flex flex-col items-center justify-center min-w-[250px]">
-            <ins
-              ref={insRef}
-              className="adsbygoogle"
-              style={{
-                display: 'block',
-                width: '100%',
-                minWidth: '250px',
-                minHeight: format === 'rectangle' ? '250px' : '90px'
-              }}
-              data-ad-client={ADSENSE_CLIENT_ID}
-              data-ad-slot={slot}
-              data-ad-format={format}
-              data-full-width-responsive={responsive ? 'true' : 'false'}
-            />
-          </div>
-        ) : (
-          /* Visual Informativo limpo para ambiente de desenvolvimento/preview */
-          <div className="py-4 px-6 rounded-lg bg-slate-950/60 border border-slate-800 flex flex-col sm:flex-row items-center gap-3 text-xs text-slate-400 w-full justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-mono text-slate-300">Google AdSense Unit</span>
-              <span className="text-slate-400">• Formato {format}</span>
-            </div>
-            <div className="text-[11px] text-slate-400 font-mono">
-              Pronto para produção • Slot {slot}
-            </div>
-          </div>
-        )}
+        <div className="w-full flex flex-col items-center justify-center min-w-[250px]">
+          <ins
+            ref={insRef}
+            className="adsbygoogle"
+            style={{
+              display: 'block',
+              width: '100%',
+              minWidth: '250px',
+              minHeight: format === 'rectangle' ? '250px' : '90px'
+            }}
+            data-ad-client={ADSENSE_CLIENT_ID}
+            data-ad-slot={slot}
+            data-ad-format={format}
+            data-full-width-responsive={responsive ? 'true' : 'false'}
+          />
+        </div>
       </div>
     </div>
   );

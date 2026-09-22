@@ -39,7 +39,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ isOpen, 
               <Lock size={16} className="text-cyan-400" /> 1. Introdução e Controlador de Dados
             </h4>
             <p>
-              O <strong>CodeCompare</strong> respeita a privacidade de seus visitantes e está comprometido com a segurança e a transparência no tratamento de dados pessoais, de acordo com a Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018).
+              O <strong>CodeCompare</strong> (disponível em <code>https://www.devedulessa.com.br</code>), fundado por Eduardo Lessa, respeita a privacidade de seus visitantes e está comprometido com a segurança e a transparência no tratamento de dados pessoais, de acordo com a Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018) e GDPR.
             </p>
           </section>
 
@@ -94,7 +94,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ isOpen, 
           <section className="space-y-2">
             <h4 className="text-white font-semibold text-base">5. Contato do Encarregado (DPO)</h4>
             <p className="text-xs text-slate-400">
-              Para tirar dúvidas sobre esta política de privacidade ou exercer seus direitos previstos na LGPD, entre em contato através do e-mail oficial do blog: <code>privacidade@codecompare.dev</code>.
+              Para tirar dúvidas sobre esta política de privacidade ou exercer seus direitos previstos na LGPD, entre em contato através do e-mail oficial: <code>contato@devedulessa.com.br</code> ou <code>eduardolessa2011@gmail.com</code>.
             </p>
           </section>
         </div>

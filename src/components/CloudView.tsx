@@ -130,7 +130,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
       </div>
 
       {/* ANÚNCIO TOP BANNER */}
-      <AdUnit slot="9876543210" format="horizontal" label="Espaço Patrocinado • Google AdSense" />
+      <AdUnit slot="9876543210" format="horizontal" label="Publicidade" />
 
       {/* SEÇÃO 1: COMPARAÇÕES TÉCNICAS DIRETAS */}
       {selectedCategory !== 'scenarios' && (
@@ -448,7 +448,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
       )}
 
       {/* ANÚNCIO INTERMEDIÁRIO */}
-      <AdUnit slot="1234554321" format="auto" label="Espaço Patrocinado • Google AdSense" />
+      <AdUnit slot="1234554321" format="auto" label="Publicidade" />
 
       {/* SEÇÃO 2: SIMULADOR DE ARQUITETURAS & WORKLOADS REAIS */}
       {(selectedCategory === 'all' || selectedCategory === 'scenarios') && (

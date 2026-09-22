@@ -47,10 +47,16 @@ export function ContactView() {
             <h3 className="font-bold text-white text-base">Contato Direto</h3>
             <div className="space-y-3 text-xs">
               <div>
-                <span className="text-slate-500 block font-mono">E-mail Principal:</span>
+                <span className="text-slate-500 block font-mono">E-mail Institucional:</span>
+                <a
+                  href="mailto:contato@devedulessa.com.br"
+                  className="text-cyan-400 font-semibold hover:underline block"
+                >
+                  contato@devedulessa.com.br
+                </a>
                 <a
                   href="mailto:eduardolessa2011@gmail.com"
-                  className="text-cyan-400 font-semibold hover:underline"
+                  className="text-slate-400 hover:text-slate-200 block text-[11px]"
                 >
                   eduardolessa2011@gmail.com
                 </a>
@@ -176,7 +182,7 @@ export function ContactView() {
         </div>
       </div>
 
-      <AdUnit slot="4433221100" format="auto" label="Espaço Patrocinado • CodeCompare" />
+      <AdUnit slot="4433221100" format="auto" label="Publicidade" />
     </div>
   );
 }

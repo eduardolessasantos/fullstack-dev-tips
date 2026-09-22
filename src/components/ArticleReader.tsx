@@ -134,7 +134,7 @@ export function ArticleReader({
       </header>
 
       {/* AdUnit após cabeçalho */}
-      <AdUnit slot="5566778899" format="horizontal" label="Espaço do Patrocinador • Google AdSense" />
+      <AdUnit slot="5566778899" format="horizontal" label="Publicidade" />
 
       {/* Introdução com Destaque Tipográfico */}
       <section className="space-y-4 text-slate-300 text-sm sm:text-base leading-relaxed max-w-4xl">
@@ -370,7 +370,7 @@ export function ArticleReader({
       </div>
 
       {/* AdUnit de Rodapé */}
-      <AdUnit slot="9988776655" format="auto" label="Conteúdo Recomendado • Google AdSense" />
+      <AdUnit slot="9988776655" format="auto" label="Publicidade" />
     </article>
   );
 }

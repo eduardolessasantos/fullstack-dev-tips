@@ -208,7 +208,7 @@ export const FunctionPointsView: React.FC = () => {
       </section>
 
       {/* AdSense Unit Topo */}
-      <AdUnit slot="7890123456" label="Publicidade • Métricas de Engenharia" />
+      <AdUnit slot="7890123456" label="Publicidade" />
 
       {/* Seção 1: O que é APF e a Matriz Canônica IFPUG */}
       <section className="space-y-6">
@@ -1010,7 +1010,7 @@ export const FunctionPointsView: React.FC = () => {
       </section>
 
       {/* AdSense Unit Rodapé */}
-      <AdUnit slot="9012345678" label="Publicidade & Apoio Editorial" />
+      <AdUnit slot="9012345678" label="Publicidade" />
     </div>
   );
 };

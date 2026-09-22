@@ -52,7 +52,7 @@ export function AboutView({ onNavigateToContact }: AboutViewProps) {
               Engenheiro de Software Full-Stack & Especialista em Arquitetura Distribuída
             </p>
             <p className="text-xs text-slate-400">
-              eduardolessa2011@gmail.com • São Gonçalo / Rio de Janeiro, Brasil
+              contato@devedulessa.com.br • eduardolessa2011@gmail.com • Rio de Janeiro, Brasil
             </p>
           </div>
         </div>
@@ -134,7 +134,7 @@ export function AboutView({ onNavigateToContact }: AboutViewProps) {
         </p>
       </section>
 
-      <AdUnit slot="3344556677" format="auto" label="Espaço Patrocinado • CodeCompare" />
+      <AdUnit slot="3344556677" format="auto" label="Publicidade" />
     </div>
   );
 }

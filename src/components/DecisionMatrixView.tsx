@@ -334,7 +334,7 @@ export function DecisionMatrixView({ onNavigateToPage }: DecisionMatrixProps) {
         </div>
       </section>
 
-      <AdUnit slot="9988771122" format="auto" label="Espaço Patrocinado • CodeCompare" />
+      <AdUnit slot="9988771122" format="auto" label="Publicidade" />
     </div>
   );
 }

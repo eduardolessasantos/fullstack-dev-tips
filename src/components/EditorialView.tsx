@@ -70,11 +70,11 @@ export function EditorialView() {
           Encontrou um ponto a melhorar em uma análise técnica?
         </h2>
         <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-          Incentivamos a revisão contínua. Você pode enviar sugestões de melhoria ou novas tecnologias para compararmos diretamente pela nossa página de contato ou pelo e-mail <strong>eduardolessa2011@gmail.com</strong>.
+          Incentivamos a revisão contínua. Você pode enviar sugestões de melhoria ou novas tecnologias para compararmos diretamente pela nossa página de contato ou pelo e-mail <strong>contato@devedulessa.com.br</strong> (ou eduardolessa2011@gmail.com).
         </p>
       </section>
 
-      <AdUnit slot="7788991122" format="auto" label="Espaço Patrocinado • CodeCompare" />
+      <AdUnit slot="7788991122" format="auto" label="Publicidade" />
     </div>
   );
 }

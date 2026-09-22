@@ -10,4 +10,4 @@ User-agent: AdsBot-Google
 Allow: /ads.txt
 Allow: /
 
-Sitemap: https://fullstack-blog-edulessa.vercel.app/sitemap.xml
+Sitemap: https://www.devedulessa.com.br/sitemap.xml
