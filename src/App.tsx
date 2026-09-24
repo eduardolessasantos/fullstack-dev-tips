@@ -70,16 +70,26 @@ export default function App() {
   const [activeDbTab, setActiveDbTab] = useState<DatabaseTab>('nosql');
   const [splitViewMode, setSplitViewMode] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [articleFilterQuery, setArticleFilterQuery] = useState('');
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   // Sync route from URL Hash or Pathname on mount and navigation
   useEffect(() => {
     const handleRoute = () => {
-      let route = window.location.hash.replace(/^#\/?/, '');
-      if (!route) {
-        route = window.location.pathname.replace(/^\//, '');
+      // 1. Extrair query params tanto de window.location.search quanto do hash
+      const urlSearchParams = new URLSearchParams(window.location.search);
+      let queryParam = urlSearchParams.get('q') || urlSearchParams.get('query') || '';
+
+      let rawHash = window.location.hash.replace(/^#\/?/, '');
+      let rawPath = window.location.pathname.replace(/^\//, '');
+
+      let route = rawHash || rawPath;
+      if (!queryParam && route.includes('?')) {
+        const [baseRoute, queryString] = route.split('?');
+        route = baseRoute;
+        const hashParams = new URLSearchParams(queryString);
+        queryParam = hashParams.get('q') || hashParams.get('query') || '';
       }
-      if (!route) return;
 
       if (route.startsWith('artigo/') || route.startsWith('artigo-')) {
         const artId = route.replace(/^(artigo\/|artigo-)/, '');
@@ -91,8 +101,24 @@ export default function App() {
         }
       }
 
+      // Rotas de artigos / busca com ou sem termo
+      if (route === 'artigos' || route === 'articles' || route === 'search' || route === 'busca') {
+        setCurrentPage('articles');
+        if (queryParam) {
+          setArticleFilterQuery(queryParam);
+        }
+        return;
+      }
+
+      if (queryParam) {
+        setArticleFilterQuery(queryParam);
+        setCurrentPage('articles');
+        return;
+      }
+
       switch (route) {
         case 'artigos':
+        case 'articles':
           setCurrentPage('articles');
           break;
         case 'matriz-decisao':
@@ -181,10 +207,26 @@ export default function App() {
       backend: 'backend',
       database: 'database'
     };
+    if (page === 'articles') {
+      setArticleFilterQuery('');
+    }
     if (window.location.hash !== `#${hashMap[page]}`) {
       window.history.pushState(null, '', hashMap[page] ? `#${hashMap[page]}` : window.location.pathname);
     }
 
+    setSidebarOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const navigateToArticlesWithFilter = (filterTerm: string) => {
+    const term = filterTerm.trim();
+    setArticleFilterQuery(term);
+    setCurrentPage('articles');
+    const targetHash = term ? `#artigos?q=${encodeURIComponent(term)}` : '#artigos';
+    if (window.location.hash !== targetHash) {
+      window.history.pushState(null, '', targetHash);
+    }
+    setSearchQuery('');
     setSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -202,9 +244,16 @@ export default function App() {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
 
-    const results: { title: string; category: string; page: PageId; targetTab?: string; articleId?: string }[] = [];
+    const results: {
+      title: string;
+      category: string;
+      page: PageId;
+      targetTab?: string;
+      articleId?: string;
+      filterTerm?: string;
+    }[] = [];
 
-    // Search in deep articles
+    // Search in deep articles - route to filtered listing view instead of direct article detail
     DETAILED_ARTICLES.forEach(a => {
       if (
         a.title.toLowerCase().includes(q) ||
@@ -212,10 +261,12 @@ export default function App() {
         a.summary.toLowerCase().includes(q) ||
         a.tag.toLowerCase().includes(q)
       ) {
+        const filterKeyword = a.title.toLowerCase().includes('signals') ? 'Signals' : (searchQuery.trim() || a.title);
         results.push({
           title: a.title,
-          category: `Artigo Completo • ${a.tag}`,
-          page: 'article',
+          category: `Artigo • ${a.tag}`,
+          page: 'articles',
+          filterTerm: filterKeyword,
           articleId: a.id
         });
       }
@@ -281,6 +332,20 @@ export default function App() {
 
     return results.slice(0, 6);
   }, [searchQuery]);
+
+  // Artigos filtrados para exibição na página de Artigos Técnicos
+  const filteredArticles = useMemo(() => {
+    const q = articleFilterQuery.trim().toLowerCase();
+    if (!q) return DETAILED_ARTICLES;
+    return DETAILED_ARTICLES.filter(
+      a =>
+        a.title.toLowerCase().includes(q) ||
+        a.subtitle.toLowerCase().includes(q) ||
+        a.summary.toLowerCase().includes(q) ||
+        a.tag.toLowerCase().includes(q) ||
+        a.category.toLowerCase().includes(q)
+    );
+  }, [articleFilterQuery]);
 
   const currentBackend = BACKEND_COMPARISONS[activeBackendLang];
 
@@ -611,8 +676,17 @@ export default function App() {
                 <Menu size={22} />
               </button>
 
-              {/* Real-time Search Input */}
-              <div className="flex-1 max-w-xl relative">
+              {/* Real-time Search Input & Submit Action */}
+              <form
+                role="search"
+                onSubmit={e => {
+                  e.preventDefault();
+                  if (searchQuery.trim()) {
+                    navigateToArticlesWithFilter(searchQuery.trim());
+                  }
+                }}
+                className="flex-1 max-w-xl relative"
+              >
                 <div
                   className={`flex items-center gap-2.5 px-3.5 py-2 rounded-full border transition-all ${
                     theme === 'dark'
@@ -620,7 +694,14 @@ export default function App() {
                       : 'bg-slate-100 border-slate-300 focus-within:border-cyan-600 focus-within:ring-2 focus-within:ring-cyan-500/20'
                   }`}
                 >
-                  <Search size={16} className="text-slate-500 shrink-0" />
+                  <button
+                    type="submit"
+                    aria-label="Buscar"
+                    title="Buscar artigos e comparações"
+                    className="text-slate-500 hover:text-cyan-400 p-0.5 cursor-pointer shrink-0 transition-colors"
+                  >
+                    <Search size={16} />
+                  </button>
                   <input
                     id="search-input"
                     type="text"
@@ -631,8 +712,10 @@ export default function App() {
                   />
                   {searchQuery && (
                     <button
+                      type="button"
                       onClick={() => setSearchQuery('')}
                       className="text-slate-500 hover:text-slate-300 p-0.5 cursor-pointer"
+                      aria-label="Limpar busca"
                     >
                       <X size={14} />
                     </button>
@@ -643,16 +726,36 @@ export default function App() {
                 {searchResults.length > 0 && (
                   <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
                     <div className="px-4 py-2 bg-slate-950/80 border-b border-slate-800 text-[11px] font-mono text-cyan-400 flex items-center justify-between">
-                      <span>Resultados para "{searchQuery}"</span>
-                      <span>{searchResults.length} encontrados</span>
+                      <span>Sugestões para "{searchQuery}"</span>
+                      <span>{searchResults.length} encontradas</span>
                     </div>
                     <div className="divide-y divide-slate-800/60 max-h-80 overflow-y-auto">
+                      {/* Opção explícita de submissão para listagem filtrada */}
+                      <button
+                        type="button"
+                        onClick={() => navigateToArticlesWithFilter(searchQuery.trim())}
+                        className="w-full text-left p-3 bg-cyan-950/30 hover:bg-cyan-900/50 border-b border-slate-800/80 transition-colors flex items-center justify-between group cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Search size={14} className="text-cyan-400 shrink-0" />
+                          <span className="text-xs text-cyan-300 font-semibold">
+                            Filtrar artigos por <strong className="text-white">"{searchQuery}"</strong>
+                          </span>
+                        </div>
+                        <ArrowRight size={14} className="text-cyan-400 group-hover:translate-x-1 transition-transform" />
+                      </button>
+
                       {searchResults.map((res, i) => (
                         <button
                           key={i}
+                          type="button"
                           onClick={() => {
-                            navigateTo(res.page, res.targetTab);
-                            setSearchQuery('');
+                            if (res.page === 'articles') {
+                              navigateToArticlesWithFilter(res.filterTerm || searchQuery || res.title);
+                            } else {
+                              navigateTo(res.page, res.targetTab);
+                              setSearchQuery('');
+                            }
                           }}
                           className="w-full text-left p-3 hover:bg-slate-800/80 transition-colors flex items-center justify-between group cursor-pointer"
                         >
@@ -670,7 +773,7 @@ export default function App() {
                     </div>
                   </div>
                 )}
-              </div>
+              </form>
 
               {/* Actions: Theme Toggle + LGPD Policy */}
               <div className="flex items-center gap-2">
@@ -1381,40 +1484,128 @@ export default function App() {
                   </p>
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {DETAILED_ARTICLES.map((art) => (
-                    <div
-                      key={art.id}
-                      onClick={() => openArticle(art.id)}
-                      className="group p-6 sm:p-7 rounded-2xl border border-slate-800 bg-slate-900/80 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/10 transition-all cursor-pointer flex flex-col justify-between"
+                {/* Barra de Filtro e Busca Rápida na Lista de Artigos */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-sm">
+                  <div className="flex-1 flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus-within:border-cyan-500/60">
+                    <Search size={16} className="text-slate-500 shrink-0" />
+                    <input
+                      id="articles-list-filter"
+                      type="text"
+                      placeholder="Filtrar artigos por título, tag ou conceito (ex: Signals, Clean Architecture)..."
+                      value={articleFilterQuery}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setArticleFilterQuery(val);
+                        const clean = val.trim();
+                        window.history.pushState(null, '', clean ? `#artigos?q=${encodeURIComponent(clean)}` : '#artigos');
+                      }}
+                      className="bg-transparent border-none outline-none text-xs sm:text-sm w-full text-slate-100 placeholder:text-slate-500"
+                    />
+                    {articleFilterQuery && (
+                      <button
+                        onClick={() => {
+                          setArticleFilterQuery('');
+                          window.history.pushState(null, '', '#artigos');
+                        }}
+                        className="text-slate-500 hover:text-slate-300 p-0.5 cursor-pointer"
+                        aria-label="Limpar filtro de artigos"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  {articleFilterQuery && (
+                    <button
+                      onClick={() => {
+                        setArticleFilterQuery('');
+                        window.history.pushState(null, '', '#artigos');
+                      }}
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-cyan-400 hover:text-cyan-300 bg-cyan-950/60 border border-cyan-800/50 hover:border-cyan-700 transition-colors whitespace-nowrap cursor-pointer"
                     >
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="px-2.5 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                            {art.tag}
-                          </span>
-                          <span className="text-slate-500 font-mono text-[11px] flex items-center gap-1">
-                            <Clock size={11} />
-                            {art.readingTime}
-                          </span>
+                      Limpar Filtro ({filteredArticles.length} encontrado{filteredArticles.length !== 1 ? 's' : ''})
+                    </button>
+                  )}
+                </div>
+
+                {/* Banner Indicativo de Filtro Ativo */}
+                {articleFilterQuery && (
+                  <div className="p-4 rounded-2xl bg-cyan-950/30 border border-cyan-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-cyan-300 animate-in fade-in duration-200">
+                    <div className="flex items-center gap-2">
+                      <Filter size={16} className="text-cyan-400 shrink-0" />
+                      <span>
+                        Resultados da busca para: <strong className="text-white font-mono text-sm">"{articleFilterQuery}"</strong>
+                        <span className="ml-2 text-slate-400">({filteredArticles.length} artigo{filteredArticles.length !== 1 ? 's' : ''} exibido{filteredArticles.length !== 1 ? 's' : ''})</span>
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setArticleFilterQuery('');
+                        window.history.pushState(null, '', '#artigos');
+                      }}
+                      className="text-cyan-400 hover:text-white underline font-semibold text-left sm:text-right cursor-pointer"
+                    >
+                      Exibir todos os {DETAILED_ARTICLES.length} artigos
+                    </button>
+                  </div>
+                )}
+
+                {/* Grid com Artigos Filtrados */}
+                {filteredArticles.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {filteredArticles.map((art) => (
+                      <div
+                        key={art.id}
+                        onClick={() => openArticle(art.id)}
+                        className="group p-6 sm:p-7 rounded-2xl border border-slate-800 bg-slate-900/80 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/10 transition-all cursor-pointer flex flex-col justify-between"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="px-2.5 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                              {art.tag}
+                            </span>
+                            <span className="text-slate-500 font-mono text-[11px] flex items-center gap-1">
+                              <Clock size={11} />
+                              {art.readingTime}
+                            </span>
+                          </div>
+
+                          <h2 className="text-lg sm:text-xl font-bold text-white group-hover:text-cyan-400 transition-colors leading-snug">
+                            {art.title}
+                          </h2>
+
+                          <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
+                            {art.summary}
+                          </p>
                         </div>
 
-                        <h2 className="text-lg sm:text-xl font-bold text-white group-hover:text-cyan-400 transition-colors leading-snug">
-                          {art.title}
-                        </h2>
-
-                        <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
-                          {art.summary}
-                        </p>
+                        <div className="pt-5 mt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform">
+                          <span>Ler artigo completo</span>
+                          <ArrowRight size={14} />
+                        </div>
                       </div>
-
-                      <div className="pt-5 mt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform">
-                        <span>Ler artigo completo</span>
-                        <ArrowRight size={14} />
-                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-12 text-center rounded-2xl border border-slate-800 bg-slate-900/40 space-y-4">
+                    <BookOpen size={36} className="mx-auto text-slate-600" />
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-bold text-white">Nenhum artigo encontrado</h3>
+                      <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
+                        Não encontramos artigos técnicos correspondentes ao termo "{articleFilterQuery}". Tente buscar por palavras-chave como <em>Signals</em>, <em>Clean Architecture</em>, <em>Goroutines</em> ou <em>MongoDB</em>.
+                      </p>
                     </div>
-                  ))}
-                </div>
+                    <button
+                      onClick={() => {
+                        setArticleFilterQuery('');
+                        window.history.pushState(null, '', '#artigos');
+                      }}
+                      className="px-5 py-2.5 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-colors cursor-pointer"
+                    >
+                      Ver Todos os Artigos
+                    </button>
+                  </div>
+                )}
 
                 <AdUnit slot="1234554321" format="auto" label="Publicidade" />
               </section>

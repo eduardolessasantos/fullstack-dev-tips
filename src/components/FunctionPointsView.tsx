@@ -18,7 +18,10 @@ import {
   Sparkles,
   Info,
   ChevronRight,
-  ArrowRight
+  ArrowRight,
+  Download,
+  FileSpreadsheet,
+  Check
 } from 'lucide-react';
 import {
   FP_ELEMENT_WEIGHTS,
@@ -32,6 +35,7 @@ import { AdUnit } from './AdUnit.tsx';
 export const FunctionPointsView: React.FC = () => {
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'backend' | 'frontend' | 'database'>('all');
   const [showGSCList, setShowGSCList] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   // Estados da Calculadora Interativa
   const [counts, setCounts] = useState({
@@ -160,6 +164,75 @@ export const FunctionPointsView: React.FC = () => {
       ...prev,
       [key]: Math.max(0, prev[key] + delta)
     }));
+  };
+
+  const handleDownloadSpreadsheet = () => {
+    // UTF-8 BOM para garantir correta acentuação no Excel em português
+    const BOM = '\uFEFF';
+    const sep = ';';
+
+    const sanitize = (val: string | number) => {
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows: string[][] = [
+      ['RELATÓRIO DE DIMENSIONAMENTO E ESTIMATIVA DE PONTOS DE FUNÇÃO (APF)'],
+      ['Portal', 'CodeCompare - Dev Tech Blog'],
+      ['Metodologia Normativa', 'IFPUG CPM 4.3.1 (ISO/IEC 20926:2009) & NESMA'],
+      ['Data de Geração', new Date().toLocaleString('pt-BR')],
+      [''],
+      ['--- 1. RESUMO EXECUTIVO ---'],
+      ['Métrica', 'Valor', 'Unidade', 'Observação'],
+      ['Pontos de Função Não Ajustados (PFNA)', String(calculationSummary.pfna), 'PF', 'Soma de funções de dados e transações'],
+      ['Classificação de Complexidade', complexityLevel.toUpperCase(), '-', 'Baseada nos 14 fatores GSC'],
+      ['Fator de Ajuste (VAF)', vafFactor.toFixed(2), 'Fator', 'Multiplicador de requisitos não funcionais'],
+      ['Pontos de Função Ajustados (PFA)', String(calculationSummary.pfa), 'PFA', 'Tamanho funcional normatizado final'],
+      ['Produtividade Média Blended', String(calculationSummary.blendedHoursPerFP), 'h/PF', 'Média ponderada da stack selecionada'],
+      ['Esforço Total Estimado', String(calculationSummary.totalHours), 'horas', 'Horas líquidas de desenvolvimento'],
+      ['Tamanho da Equipe', String(teamSize), 'desenvolvedores', 'Equipe dedicada de engenharia'],
+      ['Duração da Sprint', String(sprintWeeks), 'semanas', 'Ciclo de iteração do Scrum'],
+      ['Prazo Estimado de Entrega', String(calculationSummary.estimatedSprints), 'sprints', `Aproximadamente ${calculationSummary.estimatedWeeks} semanas`],
+      ['Código Fonte Equivalente (KSLOC)', String(calculationSummary.estimatedKsloc), 'KSLOC', `~${Math.round(calculationSummary.estimatedKsloc * 1000)} linhas de código`],
+      ['Densidade de Defeitos Projetada', String(calculationSummary.expectedDefects), 'bugs', 'Estimativa de incidentes em produção no 1º ano'],
+      ['Sustentação Anual Projetada', String(calculationSummary.annualMaintenanceHours), 'h/ano', 'Manutenção corretiva e preventiva anual'],
+      [''],
+      ['--- 2. CONTAGEM DETALHADA POR TIPO DE FUNÇÃO (IFPUG) ---'],
+      ['Sigla', 'Componente Funcional', 'Baixa (qtd)', 'Média (qtd)', 'Alta (qtd)', 'Total Ocorrências', 'Subtotal PF'],
+      ['ALI', 'Arquivos Lógicos Internos (Tabelas / Entidades Próprias)', String(counts.aliLow), String(counts.aliMed), String(counts.aliHigh), String(counts.aliLow + counts.aliMed + counts.aliHigh), String(calculationSummary.ali)],
+      ['AIE', 'Arquivos de Interface Externa (APIs Consumidas / Bancos Externos)', String(counts.aieLow), String(counts.aieMed), String(counts.aieHigh), String(counts.aieLow + counts.aieMed + counts.aieHigh), String(calculationSummary.aie)],
+      ['EE', 'Entradas Externas (POST, PUT, DELETE, Gravações)', String(counts.eeLow), String(counts.eeMed), String(counts.eeHigh), String(counts.eeLow + counts.eeMed + counts.eeHigh), String(calculationSummary.ee)],
+      ['SE', 'Saídas Externas (Relatórios, Cálculos, Webhooks)', String(counts.seLow), String(counts.seMed), String(counts.seHigh), String(counts.seLow + counts.seMed + counts.seHigh), String(calculationSummary.se)],
+      ['CE', 'Consultas Externas (GETs simples, buscas paginadas)', String(counts.ceLow), String(counts.ceMed), String(counts.ceHigh), String(counts.ceLow + counts.ceMed + counts.ceHigh), String(calculationSummary.ce)],
+      ['Subtotal Funções de Dados (ALI + AIE)', '-', '-', '-', '-', String(counts.aliLow + counts.aliMed + counts.aliHigh + counts.aieLow + counts.aieMed + counts.aieHigh), String(calculationSummary.dataFunctions)],
+      ['Subtotal Funções de Transação (EE + SE + CE)', '-', '-', '-', '-', String(counts.eeLow + counts.eeMed + counts.eeHigh + counts.seLow + counts.seMed + counts.seHigh + counts.ceLow + counts.ceMed + counts.ceHigh), String(calculationSummary.transactionFunctions)],
+      ['Total Geral PFNA', '-', '-', '-', '-', '-', String(calculationSummary.pfna)],
+      [''],
+      ['--- 3. COMPOSIÇÃO DA STACK TECNOLÓGICA E ESFORÇO PONDERADO ---'],
+      ['Camada', 'Tecnologia Selecionada', 'Taxa Produtividade (h/PF)', 'SLOC / PF', 'Distribuição de Esforço (%)', 'Horas Estimadas (h)'],
+      ['Backend', calculationSummary.beMetric.name, String(calculationSummary.beMetric.hoursPerFP.avg), String(calculationSummary.beMetric.slocPerFP), '50%', String(Math.round(calculationSummary.totalHours * 0.5))],
+      ['Frontend', calculationSummary.feMetric.name, String(calculationSummary.feMetric.hoursPerFP.avg), String(calculationSummary.feMetric.slocPerFP), '35%', String(Math.round(calculationSummary.totalHours * 0.35))],
+      ['Banco de Dados', calculationSummary.dbMetric.name, String(calculationSummary.dbMetric.hoursPerFP.avg), String(calculationSummary.dbMetric.slocPerFP), '15%', String(Math.round(calculationSummary.totalHours * 0.15))],
+      ['Total Integrado', 'Stack Full-Stack Selecionada', String(calculationSummary.blendedHoursPerFP), '-', '100%', String(calculationSummary.totalHours)]
+    ];
+
+    const csvContent = BOM + rows.map(r => r.map(sanitize).join(sep)).join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const now = new Date();
+    const dateFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    link.setAttribute('href', url);
+    link.setAttribute('download', `estimativa_pontos_de_funcao_${dateFormatted}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setDownloadSuccess(true);
+    setTimeout(() => {
+      setDownloadSuccess(false);
+    }, 4000);
   };
 
   return (
@@ -449,9 +522,18 @@ export const FunctionPointsView: React.FC = () => {
                 ceHigh: 0
               })
             }
-            className="px-3 py-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 rounded-lg border border-cyan-800/50 hover:border-cyan-700 bg-cyan-950/40 transition-colors self-start md:self-auto"
+            className="px-3 py-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 rounded-lg border border-cyan-800/50 hover:border-cyan-700 bg-cyan-950/40 transition-colors self-start md:self-auto cursor-pointer"
           >
             Carregar Exemplo Padrão
+          </button>
+
+          <button
+            onClick={handleDownloadSpreadsheet}
+            className="px-3.5 py-1.5 text-xs font-semibold text-white rounded-lg border border-emerald-500/50 hover:border-emerald-400 bg-emerald-950/70 hover:bg-emerald-900/80 transition-colors flex items-center gap-1.5 self-start md:self-auto cursor-pointer shadow-sm"
+            title="Exportar planilha formatada para Excel / Google Planilhas"
+          >
+            <FileSpreadsheet size={14} className="text-emerald-400" />
+            <span>Baixar Planilha (.csv / Excel)</span>
           </button>
         </div>
 
@@ -881,6 +963,29 @@ export const FunctionPointsView: React.FC = () => {
                 <span className="font-mono font-bold text-amber-400">
                   ~{calculationSummary.annualMaintenanceHours} h/ano
                 </span>
+              </div>
+
+              {/* Botão de Download da Planilha */}
+              <div className="pt-2 space-y-2">
+                <button
+                  id="download-fp-spreadsheet-btn"
+                  onClick={handleDownloadSpreadsheet}
+                  className="w-full py-3 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                >
+                  <Download size={16} className="group-hover:-translate-y-0.5 transition-transform" />
+                  <span>Baixar Planilha de Estimativa (.csv / Excel)</span>
+                </button>
+
+                {downloadSuccess && (
+                  <div className="p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2 animate-in fade-in duration-200">
+                    <Check size={14} className="text-emerald-400 shrink-0" />
+                    <span>Planilha gerada com sucesso! Verifique seus downloads.</span>
+                  </div>
+                )}
+
+                <p className="text-[10px] text-slate-500 text-center">
+                  Compatível com Microsoft Excel, Google Planilhas e LibreOffice Calc. Codificado em UTF-8 com separador padrão.
+                </p>
               </div>
             </div>
           </div>
