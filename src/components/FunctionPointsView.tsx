@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Calculator,
   Layers,
@@ -166,8 +166,8 @@ export const FunctionPointsView: React.FC = () => {
     }));
   };
 
-  const handleDownloadSpreadsheet = () => {
-    // UTF-8 BOM para garantir correta acentuação no Excel em português
+  // Conteúdo CSV pré-calculado com codificação UTF-8 com BOM
+  const csvContent = useMemo(() => {
     const BOM = '\uFEFF';
     const sep = ';';
 
@@ -216,19 +216,39 @@ export const FunctionPointsView: React.FC = () => {
       ['Total Integrado', 'Stack Full-Stack Selecionada', String(calculationSummary.blendedHoursPerFP), '-', '100%', String(calculationSummary.totalHours)]
     ];
 
-    const csvContent = BOM + rows.map(r => r.map(sanitize).join(sep)).join('\r\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const now = new Date();
-    const dateFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    link.setAttribute('href', url);
-    link.setAttribute('download', `estimativa_pontos_de_funcao_${dateFormatted}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    return BOM + rows.map(r => r.map(sanitize).join(sep)).join('\r\n');
+  }, [calculationSummary, counts, complexityLevel, vafFactor, teamSize, sprintWeeks]);
 
+  // Data URI inline para download instantâneo detectável por inspeção de DOM
+  const csvDataUri = useMemo(() => {
+    return 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+  }, [csvContent]);
+
+  // Blob URL persistente para browsers e automações
+  const [blobUrl, setBlobUrl] = useState<string>('');
+
+  useEffect(() => {
+    let url = '';
+    try {
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      url = URL.createObjectURL(blob);
+      setBlobUrl(url);
+    } catch {
+      // Fallback para csvDataUri
+    }
+
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [csvContent]);
+
+  // URL ativa disponível imediatamente (Blob com fallback para Data URI)
+  const downloadUrl = blobUrl || csvDataUri;
+  const fileName = 'estimativa_pontos_de_funcao.csv';
+
+  const handleDownloadSpreadsheet = () => {
     setDownloadSuccess(true);
     setTimeout(() => {
       setDownloadSuccess(false);
@@ -299,6 +319,19 @@ export const FunctionPointsView: React.FC = () => {
               divididos em Funções de Dados (o que o sistema armazena) e Funções de Transação (o que o sistema processa).
             </p>
           </div>
+
+          <a
+            id="download-fp-overview-btn"
+            href={downloadUrl}
+            download={fileName}
+            data-href={downloadUrl}
+            onClick={handleDownloadSpreadsheet}
+            className="px-3.5 py-2 text-xs font-semibold text-cyan-300 hover:text-white rounded-xl border border-cyan-800/60 hover:border-cyan-600 bg-cyan-950/40 hover:bg-cyan-900/60 transition-colors flex items-center gap-1.5 self-start md:self-auto cursor-pointer shadow-sm shrink-0"
+            title="Exportar planilha de pontos de função"
+          >
+            <FileSpreadsheet size={14} className="text-cyan-400 shrink-0" />
+            <span>Exportar Matriz APF (.csv)</span>
+          </a>
         </div>
 
         {/* Tabela de Pesos Canônicos */}
@@ -359,10 +392,24 @@ export const FunctionPointsView: React.FC = () => {
             </p>
           </div>
 
-          {/* Filtros de Categoria */}
-          <div className="flex items-center gap-1.5 p-1 rounded-lg bg-slate-900 border border-slate-800 text-xs self-start md:self-auto">
-            <button
-              onClick={() => setActiveCategoryFilter('all')}
+          {/* Ações e Filtros de Categoria */}
+          <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+            <a
+              id="download-fp-metrics-btn"
+              href={downloadUrl}
+              download={fileName}
+              data-href={downloadUrl}
+              onClick={handleDownloadSpreadsheet}
+              className="px-3 py-1.5 rounded-lg border border-cyan-800/60 hover:border-cyan-600 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Baixar planilha com métricas de produtividade"
+            >
+              <Download size={13} className="text-cyan-400 shrink-0" />
+              <span>Baixar Métricas APF (.csv)</span>
+            </a>
+
+            <div className="flex items-center gap-1.5 p-1 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+              <button
+                onClick={() => setActiveCategoryFilter('all')}
               className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
                 activeCategoryFilter === 'all'
                   ? 'bg-cyan-500 text-slate-950 font-bold'
@@ -403,6 +450,7 @@ export const FunctionPointsView: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
 
         {/* Tabela de Produtividade */}
         <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/60 shadow-lg">
@@ -527,14 +575,18 @@ export const FunctionPointsView: React.FC = () => {
             Carregar Exemplo Padrão
           </button>
 
-          <button
+          <a
+            id="download-fp-calculator-btn"
+            href={downloadUrl}
+            download={fileName}
+            data-href={downloadUrl}
             onClick={handleDownloadSpreadsheet}
             className="px-3.5 py-1.5 text-xs font-semibold text-white rounded-lg border border-emerald-500/50 hover:border-emerald-400 bg-emerald-950/70 hover:bg-emerald-900/80 transition-colors flex items-center gap-1.5 self-start md:self-auto cursor-pointer shadow-sm"
             title="Exportar planilha formatada para Excel / Google Planilhas"
           >
             <FileSpreadsheet size={14} className="text-emerald-400" />
             <span>Baixar Planilha (.csv / Excel)</span>
-          </button>
+          </a>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -967,14 +1019,18 @@ export const FunctionPointsView: React.FC = () => {
 
               {/* Botão de Download da Planilha */}
               <div className="pt-2 space-y-2">
-                <button
+                <a
                   id="download-fp-spreadsheet-btn"
+                  href={downloadUrl}
+                  download={fileName}
+                  data-href={downloadUrl}
                   onClick={handleDownloadSpreadsheet}
-                  className="w-full py-3 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                  className="w-full py-3 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer group text-center"
+                  title="Baixar Planilha de Estimativa (.csv / Excel)"
                 >
-                  <Download size={16} className="group-hover:-translate-y-0.5 transition-transform" />
+                  <Download size={16} className="group-hover:-translate-y-0.5 transition-transform shrink-0" />
                   <span>Baixar Planilha de Estimativa (.csv / Excel)</span>
-                </button>
+                </a>
 
                 {downloadSuccess && (
                   <div className="p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2 animate-in fade-in duration-200">
