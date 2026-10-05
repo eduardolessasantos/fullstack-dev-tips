@@ -473,8 +473,8 @@ export default function App() {
                   <Compass size={18} className="text-purple-400" />
                   <span>Matriz de Decisão</span>
                 </div>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">
-                  Novo
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono font-bold">
+                  Matriz
                 </span>
               </button>
 
@@ -510,7 +510,7 @@ export default function App() {
                   <span>Cloud: AWS vs Azure</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
-                  Novo
+                  Cloud
                 </span>
               </button>
 
@@ -527,8 +527,8 @@ export default function App() {
                   <GraduationCap size={18} className="text-amber-400" />
                   <span>Formações & Certificações</span>
                 </div>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
-                  Novo
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono font-bold">
+                  Trilhas
                 </span>
               </button>
             </div>
@@ -1802,21 +1802,18 @@ export default function App() {
                       </button>
                     </li>
                     <li>
-                      <button onClick={() => navigateTo('function-points')} className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1.5">
-                        <span>Pontos de Função (APF)</span>
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono font-bold">Novo</span>
+                      <button onClick={() => navigateTo('function-points')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Pontos de Função (APF)
                       </button>
                     </li>
                     <li>
-                      <button onClick={() => navigateTo('cloud')} className="hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1.5">
-                        <span>Cloud: AWS vs Azure</span>
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">Novo</span>
+                      <button onClick={() => navigateTo('cloud')} className="hover:text-amber-400 transition-colors cursor-pointer">
+                        Cloud: AWS vs Azure
                       </button>
                     </li>
                     <li>
-                      <button onClick={() => navigateTo('courses')} className="hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1.5">
-                        <span>Formações & Certificações</span>
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">Novo</span>
+                      <button onClick={() => navigateTo('courses')} className="hover:text-amber-400 transition-colors cursor-pointer">
+                        Formações & Certificações
                       </button>
                     </li>
                   </ul>

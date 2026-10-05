@@ -22,9 +22,10 @@
 }
 
 /* Bloqueio estrito de anúncios em telas sem conteúdo do editor (Contato, Termos, Alertas, Modais) */
-.no-ads,
 .no-ads .google-auto-placed,
-.no-ads ins.adsbygoogle {
+.no-ads ins.adsbygoogle,
+.no-ads [data-ad-client],
+.no-ads [id^="google_ads"] {
   display: none !important;
 }
 
