@@ -6,6 +6,7 @@ export type PageId =
   | 'backend'
   | 'database'
   | 'cloud'
+  | 'courses'
   | 'decision-matrix'
   | 'function-points'
   | 'about'
@@ -140,4 +141,50 @@ export interface RelationalOptimization {
   sqlBefore: string;
   sqlAfter: string;
   impact: string;
+}
+
+export type FormationCategory = 'all' | 'certifications' | 'backend' | 'frontend' | 'cloud' | 'architecture';
+export type FormationLevel = 'Iniciante' | 'Intermediário' | 'Avançado' | 'Especialista';
+export type CertificationProvider = 'AWS' | 'Microsoft Azure' | 'HashiCorp' | 'Full-Stack';
+
+export interface FormationModule {
+  title: string;
+  hours?: string;
+  topics: string[];
+}
+
+export interface ExamDomain {
+  domain: string;
+  weight: string;
+  description: string;
+}
+
+export interface WeeklyStudyPlan {
+  week: string;
+  focus: string;
+  deliverables: string;
+}
+
+export interface Formation {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: FormationCategory;
+  provider: CertificationProvider;
+  level: FormationLevel;
+  duration: string;
+  examCode?: string;
+  badgeColor: string;
+  technologies: string[];
+  description: string;
+  targetAudience: string;
+  prerequisites: string[];
+  skillsLearned: string[];
+  modules: FormationModule[];
+  examDomains?: ExamDomain[];
+  officialGuideUrl?: string;
+  relatedArticleId?: string;
+  relatedPageId?: PageId;
+  relatedTab?: string;
+  weeklyPlan?: WeeklyStudyPlan[];
 }

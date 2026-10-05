@@ -29,7 +29,6 @@ import {
   CloudArchitectureScenario
 } from '../data/cloudData.ts';
 import { CodeBlock } from './CodeBlock.tsx';
-import { AdUnit } from './AdUnit.tsx';
 
 interface CloudViewProps {
   onNavigateToPage?: (page: any) => void;
@@ -55,7 +54,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
   const activeScenario = CLOUD_SCENARIOS.find((s) => s.id === activeScenarioId) || CLOUD_SCENARIOS[0];
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-300">
+    <div className="space-y-12 animate-in fade-in duration-300 no-ads">
       {/* HEADER PRINCIPAL */}
       <section className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-8 sm:p-12 shadow-2xl">
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 rounded-full bg-gradient-to-br from-amber-500/10 via-sky-500/10 to-transparent blur-3xl pointer-events-none" />
@@ -128,9 +127,6 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
           );
         })}
       </div>
-
-      {/* ANÚNCIO TOP BANNER */}
-      <AdUnit slot="9876543210" format="horizontal" label="Publicidade" />
 
       {/* SEÇÃO 1: COMPARAÇÕES TÉCNICAS DIRETAS */}
       {selectedCategory !== 'scenarios' && (
@@ -446,9 +442,6 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
           })}
         </section>
       )}
-
-      {/* ANÚNCIO INTERMEDIÁRIO */}
-      <AdUnit slot="1234554321" format="auto" label="Publicidade" />
 
       {/* SEÇÃO 2: SIMULADOR DE ARQUITETURAS & WORKLOADS REAIS */}
       {(selectedCategory === 'all' || selectedCategory === 'scenarios') && (

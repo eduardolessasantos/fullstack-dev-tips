@@ -133,9 +133,6 @@ export function ArticleReader({
         </div>
       </header>
 
-      {/* AdUnit após cabeçalho */}
-      <AdUnit slot="5566778899" format="horizontal" label="Publicidade" />
-
       {/* Introdução com Destaque Tipográfico */}
       <section className="space-y-4 text-slate-300 text-sm sm:text-base leading-relaxed max-w-4xl">
         {article.introduction.map((paragraph, idx) => (
@@ -147,6 +144,9 @@ export function ArticleReader({
           </p>
         ))}
       </section>
+
+      {/* AdUnit após Introdução Editorial */}
+      <AdUnit slot="5566778899" format="horizontal" label="Publicidade" />
 
       {/* O Problema Contextual no Mundo Real */}
       <section className="p-6 sm:p-8 rounded-2xl border border-rose-500/20 bg-rose-950/10 space-y-4 max-w-4xl">

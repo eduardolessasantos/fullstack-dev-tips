@@ -30,7 +30,6 @@ import {
   GENERAL_SYSTEM_CHARACTERISTICS,
   TechProductivityMetric
 } from '../data/functionPointsData.ts';
-import { AdUnit } from './AdUnit.tsx';
 
 export const FunctionPointsView: React.FC = () => {
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'backend' | 'frontend' | 'database'>('all');
@@ -256,7 +255,7 @@ export const FunctionPointsView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-12">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-12 no-ads">
       {/* Header Institucional da Seção */}
       <section className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-b from-slate-900 via-slate-900/80 to-slate-950 p-6 md:p-10 shadow-2xl">
         <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -299,9 +298,6 @@ export const FunctionPointsView: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* AdSense Unit Topo */}
-      <AdUnit slot="7890123456" label="Publicidade" />
 
       {/* Seção 1: O que é APF e a Matriz Canônica IFPUG */}
       <section className="space-y-6">
@@ -1169,9 +1165,6 @@ export const FunctionPointsView: React.FC = () => {
           </div>
         )}
       </section>
-
-      {/* AdSense Unit Rodapé */}
-      <AdUnit slot="9012345678" label="Publicidade" />
     </div>
   );
 };

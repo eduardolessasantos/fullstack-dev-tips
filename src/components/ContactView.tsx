@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Mail, Send, CheckCircle2, MessageSquare, AlertCircle, Sparkles } from 'lucide-react';
-import { AdUnit } from './AdUnit.tsx';
 
 export function ContactView() {
   const [name, setName] = useState('');
@@ -26,7 +25,7 @@ export function ContactView() {
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-300 max-w-4xl pb-16">
+    <div className="space-y-10 animate-in fade-in duration-300 max-w-4xl pb-16 no-ads">
       <header className="border-b border-slate-800/80 pb-6 space-y-2">
         <div className="inline-flex items-center gap-2 text-xs font-mono uppercase font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
           <MessageSquare size={14} />
@@ -181,8 +180,6 @@ export function ContactView() {
           )}
         </div>
       </div>
-
-      <AdUnit slot="4433221100" format="auto" label="Publicidade" />
     </div>
   );
 }

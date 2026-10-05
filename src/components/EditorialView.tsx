@@ -1,10 +1,9 @@
 import React from 'react';
 import { BookOpen, ShieldCheck, Scale, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
-import { AdUnit } from './AdUnit.tsx';
 
 export function EditorialView() {
   return (
-    <div className="space-y-10 animate-in fade-in duration-300 max-w-4xl pb-16">
+    <div className="space-y-10 animate-in fade-in duration-300 max-w-4xl pb-16 no-ads">
       <header className="border-b border-slate-800/80 pb-6 space-y-2">
         <div className="inline-flex items-center gap-2 text-xs font-mono uppercase font-bold text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">
           <Scale size={14} />
@@ -73,8 +72,6 @@ export function EditorialView() {
           Incentivamos a revisão contínua. Você pode enviar sugestões de melhoria ou novas tecnologias para compararmos diretamente pela nossa página de contato ou pelo e-mail <strong>contato@devedulessa.com.br</strong> (ou eduardolessa2011@gmail.com).
         </p>
       </section>
-
-      <AdUnit slot="7788991122" format="auto" label="Publicidade" />
     </div>
   );
 }

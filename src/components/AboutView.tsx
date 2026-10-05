@@ -12,7 +12,6 @@ import {
   Linkedin,
   Sparkles
 } from 'lucide-react';
-import { AdUnit } from './AdUnit.tsx';
 
 interface AboutViewProps {
   onNavigateToContact: () => void;
@@ -20,7 +19,7 @@ interface AboutViewProps {
 
 export function AboutView({ onNavigateToContact }: AboutViewProps) {
   return (
-    <div className="space-y-12 animate-in fade-in duration-300 max-w-4xl pb-16">
+    <div className="space-y-12 animate-in fade-in duration-300 max-w-4xl pb-16 no-ads">
       {/* Header */}
       <header className="border-b border-slate-800/80 pb-6 space-y-2">
         <div className="inline-flex items-center gap-2 text-xs font-mono uppercase font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
@@ -133,8 +132,6 @@ export function AboutView({ onNavigateToContact }: AboutViewProps) {
           O CodeCompare repudia ativamente a geração indiscriminada de artigos vazios por ferramentas automáticas de scraping. Todo o material, arquitetura de tabelas, análises de trade-offs e diagramas conceituais são redigidos, revisados e mantidos manualmente para fornecer valor concreto e prático à carreira de engenheiros de software.
         </p>
       </section>
-
-      <AdUnit slot="3344556677" format="auto" label="Publicidade" />
     </div>
   );
 }

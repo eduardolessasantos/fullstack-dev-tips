@@ -20,3 +20,11 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.4);
 }
+
+/* Bloqueio estrito de anúncios em telas sem conteúdo do editor (Contato, Termos, Alertas, Modais) */
+.no-ads,
+.no-ads .google-auto-placed,
+.no-ads ins.adsbygoogle {
+  display: none !important;
+}
+

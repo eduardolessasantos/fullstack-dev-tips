@@ -31,15 +31,17 @@ import {
   ArrowRight,
   CheckCircle2,
   Calculator,
-  Cloud
+  Cloud,
+  GraduationCap,
+  Award
 } from 'lucide-react';
 import { PageId, FrontendFramework, BackendLanguage, DatabaseTab } from './types.ts';
 import { FRONTEND_COMPARISONS } from './data/frontendData.ts';
 import { BACKEND_COMPARISONS } from './data/backendData.ts';
 import { NOSQL_DATA, RELATIONAL_OPTIMIZATIONS, RECENT_ARTICLES, RecentArticle } from './data/databaseData.ts';
 import { DETAILED_ARTICLES } from './data/articlesData.ts';
+import { FORMATIONS_DATA } from './data/coursesData.ts';
 import { CodeBlock } from './components/CodeBlock.tsx';
-import { AdUnit } from './components/AdUnit.tsx';
 import { LGPDBanner } from './components/LGPDBanner.tsx';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal.tsx';
 import { ArticleReader } from './components/ArticleReader.tsx';
@@ -50,6 +52,7 @@ import { TermsView } from './components/TermsView.tsx';
 import { DecisionMatrixView } from './components/DecisionMatrixView.tsx';
 import { FunctionPointsView } from './components/FunctionPointsView.tsx';
 import { CloudView } from './components/CloudView.tsx';
+import { CoursesView } from './components/CoursesView.tsx';
 
 export default function App() {
   // Theme state with local persistence
@@ -83,17 +86,17 @@ export default function App() {
       let rawHash = window.location.hash.replace(/^#\/?/, '');
       let rawPath = window.location.pathname.replace(/^\//, '');
 
-      let route = rawHash || rawPath;
+      let route = (rawHash || rawPath).replace(/\/$/, '');
       if (!queryParam && route.includes('?')) {
         const [baseRoute, queryString] = route.split('?');
-        route = baseRoute;
+        route = baseRoute.replace(/\/$/, '');
         const hashParams = new URLSearchParams(queryString);
         queryParam = hashParams.get('q') || hashParams.get('query') || '';
       }
 
-      if (route.startsWith('artigo/') || route.startsWith('artigo-')) {
-        const artId = route.replace(/^(artigo\/|artigo-)/, '');
-        const found = DETAILED_ARTICLES.find(a => a.id === artId);
+      if (route.startsWith('artigo/') || route.startsWith('artigo-') || route.startsWith('artigos/')) {
+        const artId = route.replace(/^(artigo\/|artigo-|artigos\/)/, '').replace(/\/$/, '');
+        const found = DETAILED_ARTICLES.find(a => a.id === artId || a.slug === artId);
         if (found) {
           setSelectedArticleId(found.id);
           setCurrentPage('article');
@@ -130,6 +133,13 @@ export default function App() {
         case 'cloud':
         case 'cloud-aws-azure':
           setCurrentPage('cloud');
+          break;
+        case 'formacoes':
+        case 'formacao':
+        case 'cursos':
+        case 'certificacoes':
+        case 'courses':
+          setCurrentPage('courses');
           break;
         case 'sobre':
           setCurrentPage('about');
@@ -199,6 +209,7 @@ export default function App() {
       'decision-matrix': 'matriz-decisao',
       'function-points': 'pontos-de-funcao',
       cloud: 'cloud',
+      courses: 'formacoes',
       about: 'sobre',
       editorial: 'diretrizes-editoriais',
       contact: 'contato',
@@ -301,6 +312,23 @@ export default function App() {
         page: 'about'
       });
     }
+
+    // Search in Formations & Certifications
+    FORMATIONS_DATA.forEach(form => {
+      if (
+        form.title.toLowerCase().includes(q) ||
+        form.subtitle.toLowerCase().includes(q) ||
+        form.technologies.some(t => t.toLowerCase().includes(q)) ||
+        (form.examCode && form.examCode.toLowerCase().includes(q)) ||
+        form.provider.toLowerCase().includes(q)
+      ) {
+        results.push({
+          title: `${form.title} ${form.examCode ? `(${form.examCode})` : ''}`,
+          category: `Formação • ${form.provider}`,
+          page: 'courses'
+        });
+      }
+    });
 
     // Search in Frontend topics
     FRONTEND_COMPARISONS.forEach(f => {
@@ -480,6 +508,24 @@ export default function App() {
                 <div className="flex items-center gap-3">
                   <Cloud size={18} className="text-amber-400" />
                   <span>Cloud: AWS vs Azure</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
+                  Novo
+                </span>
+              </button>
+
+              <button
+                id="nav-courses-btn"
+                onClick={() => navigateTo('courses')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                  currentPage === 'courses'
+                    ? 'bg-gradient-to-r from-amber-500/20 via-purple-500/10 to-cyan-500/20 text-amber-300 font-bold border border-amber-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <GraduationCap size={18} className="text-amber-400" />
+                  <span>Formações & Certificações</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
                   Novo
@@ -799,7 +845,7 @@ export default function App() {
             {/* PÁGINA 1: HOME (Hero + 6 Cards de Artigos Recentes) */}
             {/* ============================================================== */}
             {currentPage === 'home' && (
-              <section className="space-y-10 animate-in fade-in duration-300">
+              <section className="space-y-10 animate-in fade-in duration-300 no-ads">
                 {/* Hero Section */}
                 <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 shadow-2xl">
                   {/* Decorative background glow */}
@@ -860,12 +906,16 @@ export default function App() {
                         <Cloud size={16} className="text-amber-400" />
                         <span>Cloud: AWS vs Azure</span>
                       </button>
+                      <button
+                        onClick={() => navigateTo('courses')}
+                        className="px-6 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500/20 via-purple-500/10 to-cyan-500/20 hover:border-amber-400 text-amber-300 border border-amber-500/30 transition-all cursor-pointer flex items-center gap-2"
+                      >
+                        <GraduationCap size={16} className="text-amber-400" />
+                        <span>Formações & Certificações</span>
+                      </button>
                     </div>
                   </div>
                 </div>
-
-                {/* AdUnit Horizontal após o Hero */}
-                <AdUnit slot="9876543210" format="horizontal" label="Publicidade" />
 
                 {/* Section Header: 6 Artigos mais recentes */}
                 <div className="space-y-6">
@@ -1004,6 +1054,30 @@ export default function App() {
                       <ArrowRight size={14} />
                     </button>
                   </div>
+
+                  {/* Banner Teaser de Formações & Certificações */}
+                  <div className="p-8 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-950/40 via-purple-950/30 to-slate-900 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
+                    <div className="space-y-2 max-w-xl">
+                      <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                        <GraduationCap size={14} />
+                        <span>Carreira & Certificações Oficiais</span>
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-black text-white">
+                        Prepare-se para Certificações AWS, Microsoft Azure e Especializações Full-Stack
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                        Conheça nossa vitrine com roteiros de estudo estruturados semana a semana para exames como <strong>AWS SAA-C03</strong>, <strong>Azure AZ-204</strong>, <strong>AZ-305</strong>, além de formações em <strong>.NET 8</strong>, <strong>FastAPI</strong>, <strong>Signals</strong> e <strong>Terraform</strong>.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => navigateTo('courses')}
+                      className="px-6 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-slate-950 font-black shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-2 shrink-0"
+                    >
+                      <span>Acessar Vitrine de Formações</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
                 </div>
               </section>
             )}
@@ -1012,7 +1086,7 @@ export default function App() {
             {/* PÁGINA 2: FRONTEND ("Mesma função, 3 frameworks") */}
             {/* ============================================================== */}
             {currentPage === 'frontend' && (
-              <section className="space-y-8 animate-in slide-in-from-bottom-2 duration-300">
+              <section className="space-y-8 animate-in slide-in-from-bottom-2 duration-300 no-ads">
                 {/* Page Title & Controls */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
                   <div>
@@ -1160,8 +1234,6 @@ export default function App() {
                     </div>
                   ))}
                 </div>
-
-                <AdUnit slot="1122334455" format="auto" label="Publicidade" />
               </section>
             )}
 
@@ -1169,7 +1241,7 @@ export default function App() {
             {/* PÁGINA 3: BACKEND ("Um CRUD, 4 linguagens") */}
             {/* ============================================================== */}
             {currentPage === 'backend' && (
-              <section className="space-y-8 animate-in slide-in-from-bottom-2 duration-300">
+              <section className="space-y-8 animate-in slide-in-from-bottom-2 duration-300 no-ads">
                 <div className="border-b border-slate-800/80 pb-6">
                   <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-purple-400 mb-1">
                     <Server size={16} />
@@ -1293,8 +1365,6 @@ export default function App() {
                     />
                   </div>
                 </div>
-
-                <AdUnit slot="4455667788" format="auto" label="Publicidade" />
               </section>
             )}
 
@@ -1302,7 +1372,7 @@ export default function App() {
             {/* PÁGINA 4: BANCO DE DADOS (NoSQL Utilities & Otimização SQL) */}
             {/* ============================================================== */}
             {currentPage === 'database' && (
-              <section className="space-y-8 animate-in slide-in-from-bottom-2 duration-300">
+              <section className="space-y-8 animate-in slide-in-from-bottom-2 duration-300 no-ads">
                 <div className="border-b border-slate-800/80 pb-6">
                   <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-400 mb-1">
                     <Database size={16} />
@@ -1461,8 +1531,6 @@ export default function App() {
                     </div>
                   </div>
                 )}
-
-                <AdUnit slot="7788990011" format="rectangle" label="Publicidade" />
               </section>
             )}
 
@@ -1470,7 +1538,7 @@ export default function App() {
             {/* PÁGINA 4: LISTA DE ARTIGOS TÉCNICOS (Deep Dives) */}
             {/* ============================================================== */}
             {currentPage === 'articles' && (
-              <section className="space-y-8 animate-in fade-in duration-300">
+              <section className="space-y-8 animate-in fade-in duration-300 no-ads">
                 <header className="border-b border-slate-800/80 pb-6 space-y-2">
                   <div className="inline-flex items-center gap-2 text-xs font-mono uppercase font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
                     <BookOpen size={14} />
@@ -1606,8 +1674,6 @@ export default function App() {
                     </button>
                   </div>
                 )}
-
-                <AdUnit slot="1234554321" format="auto" label="Publicidade" />
               </section>
             )}
 
@@ -1643,6 +1709,16 @@ export default function App() {
             {/* ============================================================== */}
             {currentPage === 'cloud' && (
               <CloudView onNavigateToPage={navigateTo} />
+            )}
+
+            {/* ============================================================== */}
+            {/* PÁGINA 6.9: VITRINE DE FORMAÇÕES & CERTIFICAÇÕES */}
+            {/* ============================================================== */}
+            {currentPage === 'courses' && (
+              <CoursesView
+                onNavigateToPage={navigateTo}
+                onNavigateToArticle={openArticle}
+              />
             )}
 
             {/* ============================================================== */}
@@ -1734,6 +1810,12 @@ export default function App() {
                     <li>
                       <button onClick={() => navigateTo('cloud')} className="hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1.5">
                         <span>Cloud: AWS vs Azure</span>
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">Novo</span>
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('courses')} className="hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1.5">
+                        <span>Formações & Certificações</span>
                         <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">Novo</span>
                       </button>
                     </li>

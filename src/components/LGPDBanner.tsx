@@ -84,7 +84,7 @@ export const LGPDBanner: React.FC = () => {
       {showBanner && (
         <div
           id="lgpd-consent-banner"
-          className="fixed bottom-0 inset-x-0 z-[120] p-3 sm:p-5 animate-in slide-in-from-bottom duration-300 pointer-events-none"
+          className="fixed bottom-0 inset-x-0 z-[120] p-3 sm:p-5 animate-in slide-in-from-bottom duration-300 pointer-events-none no-ads"
         >
           <div className="max-w-5xl mx-auto bg-slate-900/95 backdrop-blur-md border border-slate-700/80 shadow-2xl rounded-2xl p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center gap-5 pointer-events-auto text-slate-200">
             <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 shrink-0 hidden sm:flex">
@@ -141,7 +141,7 @@ export const LGPDBanner: React.FC = () => {
 
       {/* Modal de Preferências Granulares */}
       {showPreferences && (
-        <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm no-ads">
           <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5 text-slate-200">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="font-bold text-base text-white flex items-center gap-2">

@@ -13,7 +13,6 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { PageId } from '../types.ts';
-import { AdUnit } from './AdUnit.tsx';
 
 interface DecisionMatrixProps {
   onNavigateToPage: (page: PageId, subTab?: string) => void;
@@ -133,7 +132,7 @@ export function DecisionMatrixView({ onNavigateToPage }: DecisionMatrixProps) {
   const rec = getRecommendation();
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-300 max-w-4xl pb-16">
+    <div className="space-y-10 animate-in fade-in duration-300 max-w-4xl pb-16 no-ads">
       {/* Header */}
       <header className="border-b border-slate-800/80 pb-6 space-y-2">
         <div className="inline-flex items-center gap-2 text-xs font-mono uppercase font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
@@ -333,8 +332,6 @@ export function DecisionMatrixView({ onNavigateToPage }: DecisionMatrixProps) {
           </div>
         </div>
       </section>
-
-      <AdUnit slot="9988771122" format="auto" label="Publicidade" />
     </div>
   );
 }

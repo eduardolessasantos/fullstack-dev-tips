@@ -1,10 +1,9 @@
 import React from 'react';
 import { FileText, Shield, Code, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { AdUnit } from './AdUnit.tsx';
 
 export function TermsView() {
   return (
-    <div className="space-y-10 animate-in fade-in duration-300 max-w-4xl pb-16">
+    <div className="space-y-10 animate-in fade-in duration-300 max-w-4xl pb-16 no-ads">
       <header className="border-b border-slate-800/80 pb-6 space-y-2">
         <div className="inline-flex items-center gap-2 text-xs font-mono uppercase font-bold text-slate-400 bg-slate-800/60 px-3 py-1 rounded-full border border-slate-700">
           <FileText size={14} />
@@ -75,8 +74,6 @@ export function TermsView() {
           </p>
         </section>
       </div>
-
-      <AdUnit slot="1122446688" format="auto" label="Publicidade" />
     </div>
   );
 }
