@@ -2,11 +2,18 @@ User-agent: *
 Allow: /ads.txt
 Allow: /
 
+User-agent: Googlebot
+Allow: /
+
 User-agent: Mediapartners-Google
 Allow: /ads.txt
 Allow: /
 
 User-agent: AdsBot-Google
+Allow: /ads.txt
+Allow: /
+
+User-agent: AdsBot-Google-Mobile
 Allow: /ads.txt
 Allow: /
 

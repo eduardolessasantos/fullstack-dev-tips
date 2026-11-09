@@ -1,4 +1,7 @@
+# Google AdSense - CodeCompare (Direto)
 google.com, pub-1242153191500402, DIRECT, f08c47fec0942fa0
+
+# JoinAds
 mgid.com, 870178, DIRECT, d4c29acad76ce94f
 joinads.me, 4fd8f3b7-4718-4669-b6c6-3b3670655e7d, DIRECT
 google.com, pub-7138772153175563, RESELLER, f08c47fec0942fa0
