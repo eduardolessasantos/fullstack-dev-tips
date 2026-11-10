@@ -42,6 +42,17 @@ O **CodeCompare** é uma plataforma e blog técnico para desenvolvedores moderno
   - Estratégias de Caching (Cache-aside com Redis)
   - Particionamento de Tabelas (Range vs List)
 
+### 4. Diagnóstico de TI & Business (`business`)
+- **Questionário Estruturado de Digitalização por Setor da Economia**:
+  - Varejo & E-commerce, Indústria & Manufatura, Serviços Corporativos, Saúde & Clínicas, Logística & Frotas, Agronegócio Conectado e Fintechs.
+- **Motor de Orçamentação Inteligente**:
+  - Projeção de Investimento de Desenvolvimento (Capex Min/Max) e Custos Mensais de Nuvem (Opex).
+  - Cronograma faseado em sprints quinzenais e dimensionamento de squad técnica.
+  - Recomendação de stacks alinhadas diretamente ao acervo técnico do CodeCompare.
+- **Geração Client-Side de Relatórios em PDF**:
+  - **Sumário Executivo (Preview Gratuito - 2 páginas)**: Visão de alto nível, stacks recomendadas e principais desafios do nicho.
+  - **Dossiê Analítico Completo (6 páginas)**: Breakdown minucioso de horas por disciplina, cronograma detalhado de sprints, simulação de infraestrutura Cloud, matriz de riscos estratégicos com planos de mitigação e checklist de conformidade LGPD.
+
 ---
 
 ## 🔒 Conformidade LGPD & Google AdSense

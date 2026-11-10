@@ -9,6 +9,7 @@ export type PageId =
   | 'courses'
   | 'decision-matrix'
   | 'function-points'
+  | 'business'
   | 'about'
   | 'editorial'
   | 'contact'
@@ -188,3 +189,93 @@ export interface Formation {
   relatedTab?: string;
   weeklyPlan?: WeeklyStudyPlan[];
 }
+
+export type EconomicSectorId =
+  | 'retail'
+  | 'industry'
+  | 'services'
+  | 'health'
+  | 'logistics'
+  | 'agro'
+  | 'fintech';
+
+export type CompanySize = 'micro' | 'small' | 'medium' | 'corporate';
+
+export type DigitalMaturityLevel = 'manual' | 'spreadsheets' | 'legacy_desktop' | 'isolated_cloud';
+
+export type ProjectPrimaryGoal =
+  | 'process_automation'
+  | 'client_portal_app'
+  | 'custom_erp'
+  | 'bi_data_intelligence'
+  | 'cloud_migration';
+
+export interface EconomicSector {
+  id: EconomicSectorId;
+  name: string;
+  tagline: string;
+  iconName: string;
+  badge: string;
+  typicalNiches: string[];
+  primaryChallenges: string[];
+  recommendedFrontend: string;
+  recommendedBackend: string;
+  recommendedDatabase: string;
+  recommendedCloud: string;
+  architectureHighlight: string;
+  lgpdConsiderations: string[];
+}
+
+export interface BusinessAssessmentInput {
+  sectorId: EconomicSectorId;
+  specificNiche: string;
+  companySize: CompanySize;
+  maturityLevel: DigitalMaturityLevel;
+  primaryGoal: ProjectPrimaryGoal;
+  customRequirements?: string;
+}
+
+export interface CostBreakdownItem {
+  category: string;
+  hours: number;
+  percentage: number;
+  estimatedCostMin: number;
+  estimatedCostMax: number;
+  description: string;
+}
+
+export interface BusinessAssessmentResult {
+  sector: EconomicSector;
+  input: BusinessAssessmentInput;
+  capexMin: number;
+  capexMax: number;
+  opexMonthlyMin: number;
+  opexMonthlyMax: number;
+  timelineWeeksMin: number;
+  timelineWeeksMax: number;
+  sprintsCount: number;
+  recommendedSquad: { role: string; count: number; allocation: string }[];
+  costBreakdown: CostBreakdownItem[];
+  cloudSimulation: {
+    provider: string;
+    tier: string;
+    services: string[];
+    estimatedMonthlyBrl: number;
+  };
+  rolloutPhases: {
+    phase: string;
+    duration: string;
+    deliverables: string[];
+  }[];
+  strategicRisks: { risk: string; impact: 'Alto' | 'Médio' | 'Baixo'; mitigation: string }[];
+  complianceChecklist: string[];
+}
+
+export interface LeadCaptureData {
+  name: string;
+  email: string;
+  phone: string;
+  companyName: string;
+  wantsConsultation: boolean;
+}
+

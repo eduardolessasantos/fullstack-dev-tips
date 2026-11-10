@@ -33,7 +33,8 @@ import {
   Calculator,
   Cloud,
   GraduationCap,
-  Award
+  Award,
+  Briefcase
 } from 'lucide-react';
 import { PageId, FrontendFramework, BackendLanguage, DatabaseTab } from './types.ts';
 import { FRONTEND_COMPARISONS } from './data/frontendData.ts';
@@ -53,6 +54,7 @@ import { DecisionMatrixView } from './components/DecisionMatrixView.tsx';
 import { FunctionPointsView } from './components/FunctionPointsView.tsx';
 import { CloudView } from './components/CloudView.tsx';
 import { CoursesView } from './components/CoursesView.tsx';
+import { BusinessView } from './components/BusinessView.tsx';
 
 export default function App() {
   // Theme state with local persistence
@@ -129,6 +131,12 @@ export default function App() {
           break;
         case 'pontos-de-funcao':
           setCurrentPage('function-points');
+          break;
+        case 'business':
+        case 'bussines':
+        case 'diagnostico-ti':
+        case 'orcamento':
+          setCurrentPage('business');
           break;
         case 'cloud':
         case 'cloud-aws-azure':
@@ -208,6 +216,7 @@ export default function App() {
       article: `artigo-${selectedArticleId}`,
       'decision-matrix': 'matriz-decisao',
       'function-points': 'pontos-de-funcao',
+      business: 'business',
       cloud: 'cloud',
       courses: 'formacoes',
       about: 'sobre',
@@ -298,6 +307,13 @@ export default function App() {
         page: 'function-points'
       });
     }
+    if ('business bussines setor nicho empresa orcamento digitalizacao consultoria viabilidade custo ti'.includes(q)) {
+      results.push({
+        title: 'Diagnóstico de TI & Orçamento Empresarial (Seção Business)',
+        category: 'Consultoria B2B',
+        page: 'business'
+      });
+    }
     if ('cloud nuvem aws azure s3 blob storage ebs disk ecs container apps app runner app service codepipeline github actions lambda functions serverless cicd deploy'.includes(q)) {
       results.push({
         title: 'Comparativo Cloud: AWS vs Azure (Storage, Deploy, CI/CD & Functions)',
@@ -380,20 +396,18 @@ export default function App() {
   return (
     <div className={`${theme} min-h-screen transition-colors duration-200`}>
       <div
-        className={`flex flex-col lg:flex-row min-h-screen ${
-          theme === 'dark'
+        className={`flex flex-col lg:flex-row min-h-screen ${theme === 'dark'
             ? 'bg-slate-950 text-slate-100'
             : 'bg-slate-100/70 text-slate-900'
-        }`}
+          }`}
       >
         {/* --- SIDEBAR FIXA ESQUERDA (DESKTOP) E DRAWER (MOBILE) --- */}
         <aside
           className={`
             fixed inset-y-0 left-0 z-50 w-72 border-r transition-transform duration-300 transform flex flex-col
-            ${
-              theme === 'dark'
-                ? 'bg-slate-950/95 border-slate-800/80 backdrop-blur-xl'
-                : 'bg-white border-slate-200/90 shadow-lg'
+            ${theme === 'dark'
+              ? 'bg-slate-950/95 border-slate-800/80 backdrop-blur-xl'
+              : 'bg-white border-slate-200/90 shadow-lg'
             }
             ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           `}
@@ -432,11 +446,10 @@ export default function App() {
               <button
                 id="nav-home-btn"
                 onClick={() => navigateTo('home')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                  currentPage === 'home'
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'home'
                     ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 font-bold border border-cyan-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
-                }`}
+                  }`}
               >
                 <Layout size={18} />
                 <span>Início / Destaques</span>
@@ -445,11 +458,10 @@ export default function App() {
               <button
                 id="nav-articles-btn"
                 onClick={() => navigateTo('articles')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                  currentPage === 'articles' || currentPage === 'article'
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'articles' || currentPage === 'article'
                     ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 font-bold border border-cyan-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <BookOpen size={18} />
@@ -463,11 +475,10 @@ export default function App() {
               <button
                 id="nav-matrix-btn"
                 onClick={() => navigateTo('decision-matrix')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                  currentPage === 'decision-matrix'
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'decision-matrix'
                     ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/10 text-purple-300 font-bold border border-purple-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <Compass size={18} className="text-purple-400" />
@@ -481,11 +492,10 @@ export default function App() {
               <button
                 id="nav-function-points-btn"
                 onClick={() => navigateTo('function-points')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                  currentPage === 'function-points'
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'function-points'
                     ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-300 font-bold border border-cyan-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <Calculator size={18} className="text-cyan-400" />
@@ -497,13 +507,29 @@ export default function App() {
               </button>
 
               <button
+                id="nav-business-btn"
+                onClick={() => navigateTo('business')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'business'
+                    ? 'bg-gradient-to-r from-cyan-500/20 via-blue-500/15 to-indigo-500/10 text-cyan-300 font-bold border border-cyan-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Briefcase size={18} className="text-cyan-400" />
+                  <span>Diagnóstico Business</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gradient-to-r from-cyan-500/30 to-blue-500/30 text-cyan-300 font-mono font-bold">
+                  $
+                </span>
+              </button>
+
+              <button
                 id="nav-cloud-btn"
                 onClick={() => navigateTo('cloud')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                  currentPage === 'cloud'
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'cloud'
                     ? 'bg-gradient-to-r from-amber-500/20 via-slate-800 to-sky-500/20 text-amber-300 font-bold border border-amber-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <Cloud size={18} className="text-amber-400" />
@@ -517,11 +543,10 @@ export default function App() {
               <button
                 id="nav-courses-btn"
                 onClick={() => navigateTo('courses')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                  currentPage === 'courses'
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'courses'
                     ? 'bg-gradient-to-r from-amber-500/20 via-purple-500/10 to-cyan-500/20 text-amber-300 font-bold border border-amber-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <GraduationCap size={18} className="text-amber-400" />
@@ -553,11 +578,10 @@ export default function App() {
                   <button
                     key={item.id}
                     onClick={() => navigateTo('frontend', item.id)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${
-                      currentPage === 'frontend' && activeFrontendTab === item.id
+                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'frontend' && activeFrontendTab === item.id
                         ? 'bg-cyan-500/15 text-cyan-300 font-semibold border-l-2 border-cyan-400'
                         : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
-                    }`}
+                      }`}
                   >
                     <span>{item.name}</span>
                     <ChevronRight size={14} className="opacity-40" />
@@ -587,11 +611,10 @@ export default function App() {
                   <button
                     key={item.id}
                     onClick={() => navigateTo('backend', item.id)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${
-                      currentPage === 'backend' && activeBackendLang === item.id
+                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'backend' && activeBackendLang === item.id
                         ? 'bg-purple-500/15 text-purple-300 font-semibold border-l-2 border-purple-400'
                         : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
-                    }`}
+                      }`}
                   >
                     <span>{item.name}</span>
                     <ChevronRight size={14} className="opacity-40" />
@@ -614,22 +637,20 @@ export default function App() {
               <div className="space-y-0.5">
                 <button
                   onClick={() => navigateTo('database', 'nosql')}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${
-                    currentPage === 'database' && activeDbTab === 'nosql'
+                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'database' && activeDbTab === 'nosql'
                       ? 'bg-emerald-500/15 text-emerald-300 font-semibold border-l-2 border-emerald-400'
                       : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
-                  }`}
+                    }`}
                 >
                   <span>NoSQL Utilities</span>
                   <ChevronRight size={14} className="opacity-40" />
                 </button>
                 <button
                   onClick={() => navigateTo('database', 'relational')}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${
-                    currentPage === 'database' && activeDbTab === 'relational'
+                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'database' && activeDbTab === 'relational'
                       ? 'bg-emerald-500/15 text-emerald-300 font-semibold border-l-2 border-emerald-400'
                       : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
-                  }`}
+                    }`}
                 >
                   <span>Otimização Relacional</span>
                   <ChevronRight size={14} className="opacity-40" />
@@ -648,33 +669,30 @@ export default function App() {
               <div className="space-y-0.5">
                 <button
                   onClick={() => navigateTo('about')}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${
-                    currentPage === 'about'
+                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'about'
                       ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
                       : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
-                  }`}
+                    }`}
                 >
                   <span>Sobre o Autor (E-E-A-T)</span>
                   <ChevronRight size={14} className="opacity-40" />
                 </button>
                 <button
                   onClick={() => navigateTo('editorial')}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${
-                    currentPage === 'editorial'
+                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'editorial'
                       ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
                       : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
-                  }`}
+                    }`}
                 >
                   <span>Diretrizes Editoriais</span>
                   <ChevronRight size={14} className="opacity-40" />
                 </button>
                 <button
                   onClick={() => navigateTo('contact')}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${
-                    currentPage === 'contact'
+                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'contact'
                       ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
                       : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
-                  }`}
+                    }`}
                 >
                   <span>Fale Conosco</span>
                   <ChevronRight size={14} className="opacity-40" />
@@ -706,11 +724,10 @@ export default function App() {
         <main className="flex-1 lg:ml-72 min-w-0 flex flex-col">
           {/* HEADER STICKY COM BUSCA & TEMA */}
           <header
-            className={`sticky top-0 z-40 backdrop-blur-xl border-b transition-colors ${
-              theme === 'dark'
+            className={`sticky top-0 z-40 backdrop-blur-xl border-b transition-colors ${theme === 'dark'
                 ? 'bg-slate-950/85 border-slate-800/80'
                 : 'bg-white/85 border-slate-200/90 shadow-sm'
-            }`}
+              }`}
           >
             <div className="max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
               {/* Mobile Drawer Trigger */}
@@ -734,11 +751,10 @@ export default function App() {
                 className="flex-1 max-w-xl relative"
               >
                 <div
-                  className={`flex items-center gap-2.5 px-3.5 py-2 rounded-full border transition-all ${
-                    theme === 'dark'
+                  className={`flex items-center gap-2.5 px-3.5 py-2 rounded-full border transition-all ${theme === 'dark'
                       ? 'bg-slate-900/80 border-slate-800 focus-within:border-cyan-500/60 focus-within:ring-2 focus-within:ring-cyan-500/20'
                       : 'bg-slate-100 border-slate-300 focus-within:border-cyan-600 focus-within:ring-2 focus-within:ring-cyan-500/20'
-                  }`}
+                    }`}
                 >
                   <button
                     type="submit"
@@ -826,11 +842,10 @@ export default function App() {
                 <button
                   id="theme-toggle-btn"
                   onClick={toggleTheme}
-                  className={`p-2.5 rounded-full border transition-all cursor-pointer ${
-                    theme === 'dark'
+                  className={`p-2.5 rounded-full border transition-all cursor-pointer ${theme === 'dark'
                       ? 'bg-slate-900 border-slate-800 hover:bg-slate-800 text-amber-400'
                       : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-700 shadow-sm'
-                  }`}
+                    }`}
                   title={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
                 >
                   {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -940,23 +955,21 @@ export default function App() {
                       <div
                         key={article.id}
                         onClick={() => openArticle(article.id)}
-                        className={`group p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
-                          theme === 'dark'
+                        className={`group p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${theme === 'dark'
                             ? 'bg-slate-900/90 border-slate-800 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/10'
                             : 'bg-white border-slate-200 hover:border-cyan-500/50 shadow-sm hover:shadow-md'
-                        }`}
+                          }`}
                       >
                         <div>
                           {/* Card Header Tag & Date */}
                           <div className="flex items-center justify-between text-xs mb-3">
                             <span
-                              className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] ${
-                                article.category === 'frontend'
+                              className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] ${article.category === 'frontend'
                                   ? 'bg-cyan-500/10 text-cyan-400'
                                   : article.category === 'backend'
-                                  ? 'bg-purple-500/10 text-purple-400'
-                                  : 'bg-emerald-500/10 text-emerald-400'
-                              }`}
+                                    ? 'bg-purple-500/10 text-purple-400'
+                                    : 'bg-emerald-500/10 text-emerald-400'
+                                }`}
                             >
                               {article.tag}
                             </span>
@@ -1078,6 +1091,30 @@ export default function App() {
                       <ArrowRight size={14} />
                     </button>
                   </div>
+
+                  {/* Banner Teaser da Seção Business (Diagnóstico de TI & Orçamento) */}
+                  <div className="p-8 rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-slate-900 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
+                    <div className="space-y-2 max-w-xl">
+                      <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
+                        <Briefcase size={14} />
+                        <span>Novo // Diagnóstico B2B & Consultoria de Software</span>
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-black text-white">
+                        Quer orçar a digitalização de processos para seu nicho de mercado?
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                        Acesse nosso <strong>Diagnóstico de TI & Orçamento Empresarial</strong>. Descubra estimativas de Capex/Opex, cronograma em sprints, squad necessária e baixe dossiês executivos em PDF adaptados ao seu setor da economia.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => navigateTo('business')}
+                      className="px-6 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-cyan-500/25 transition-all cursor-pointer flex items-center gap-2 shrink-0"
+                    >
+                      <span>Simular Orçamento de TI</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
                 </div>
               </section>
             )}
@@ -1107,11 +1144,10 @@ export default function App() {
                     {/* Botão de Modo Lado a Lado */}
                     <button
                       onClick={() => setSplitViewMode(!splitViewMode)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer ${
-                        splitViewMode
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer ${splitViewMode
                           ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50'
                           : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                      }`}
+                        }`}
                       title="Alternar entre ver 1 aba por vez ou todos lado a lado"
                     >
                       <Columns size={14} />
@@ -1129,11 +1165,10 @@ export default function App() {
                           <button
                             key={tab.id}
                             onClick={() => setActiveFrontendTab(tab.id as FrontendFramework)}
-                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                              activeFrontendTab === tab.id
+                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${activeFrontendTab === tab.id
                                 ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
                                 : 'text-slate-400 hover:text-white'
-                            }`}
+                              }`}
                           >
                             {tab.label}
                           </button>
@@ -1148,9 +1183,8 @@ export default function App() {
                   {FRONTEND_COMPARISONS.map((item, idx) => (
                     <div
                       key={item.id}
-                      className={`p-6 sm:p-8 rounded-2xl border transition-all ${
-                        theme === 'dark' ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
-                      }`}
+                      className={`p-6 sm:p-8 rounded-2xl border transition-all ${theme === 'dark' ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+                        }`}
                     >
                       {/* Topic Header */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
@@ -1212,13 +1246,12 @@ export default function App() {
                           <CodeBlock
                             code={item.codes[activeFrontendTab].code}
                             language={item.codes[activeFrontendTab].lang}
-                            filename={`${
-                              activeFrontendTab === 'angular'
+                            filename={`${activeFrontendTab === 'angular'
                                 ? 'component.ts'
                                 : activeFrontendTab === 'vue'
-                                ? 'Component.vue'
-                                : 'Component.tsx'
-                            }`}
+                                  ? 'Component.vue'
+                                  : 'Component.tsx'
+                              }`}
                             theme={theme}
                           />
 
@@ -1264,11 +1297,10 @@ export default function App() {
                       <button
                         key={langKey}
                         onClick={() => setActiveBackendLang(langKey)}
-                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                          isActive
+                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${isActive
                             ? 'bg-purple-500/15 border-purple-500/60 text-white shadow-lg shadow-purple-500/10'
                             : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-                        }`}
+                          }`}
                       >
                         <span className="text-[10px] font-mono uppercase font-bold tracking-wider opacity-60 block mb-1">
                           Stack #{langKey}
@@ -1292,9 +1324,8 @@ export default function App() {
 
                   {/* 1. Estrutura do Model */}
                   <div
-                    className={`p-6 sm:p-8 rounded-2xl border ${
-                      theme === 'dark' ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'
-                    }`}
+                    className={`p-6 sm:p-8 rounded-2xl border ${theme === 'dark' ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'
+                      }`}
                   >
                     <div className="mb-4">
                       <span className="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider bg-purple-500/10 px-2 py-0.5 rounded">
@@ -1317,9 +1348,8 @@ export default function App() {
 
                   {/* 2. Estrutura do Controller */}
                   <div
-                    className={`p-6 sm:p-8 rounded-2xl border ${
-                      theme === 'dark' ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'
-                    }`}
+                    className={`p-6 sm:p-8 rounded-2xl border ${theme === 'dark' ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'
+                      }`}
                   >
                     <div className="mb-4">
                       <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider bg-cyan-500/10 px-2 py-0.5 rounded">
@@ -1342,9 +1372,8 @@ export default function App() {
 
                   {/* 3. Rota GET /api/users com conexão ao banco */}
                   <div
-                    className={`p-6 sm:p-8 rounded-2xl border ${
-                      theme === 'dark' ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'
-                    }`}
+                    className={`p-6 sm:p-8 rounded-2xl border ${theme === 'dark' ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'
+                      }`}
                   >
                     <div className="mb-4">
                       <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-2 py-0.5 rounded">
@@ -1390,9 +1419,8 @@ export default function App() {
                 <div className="flex gap-4 border-b border-slate-800">
                   <button
                     onClick={() => setActiveDbTab('nosql')}
-                    className={`pb-4 px-3 text-sm font-bold transition-all relative cursor-pointer ${
-                      activeDbTab === 'nosql' ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'
-                    }`}
+                    className={`pb-4 px-3 text-sm font-bold transition-all relative cursor-pointer ${activeDbTab === 'nosql' ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'
+                      }`}
                   >
                     NoSQL Utilities (Tabela Comparativa)
                     {activeDbTab === 'nosql' && (
@@ -1401,9 +1429,8 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => setActiveDbTab('relational')}
-                    className={`pb-4 px-3 text-sm font-bold transition-all relative cursor-pointer ${
-                      activeDbTab === 'relational' ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'
-                    }`}
+                    className={`pb-4 px-3 text-sm font-bold transition-all relative cursor-pointer ${activeDbTab === 'relational' ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'
+                      }`}
                   >
                     Otimização Relacional (6 Práticas)
                     {activeDbTab === 'relational' && (
@@ -1479,11 +1506,10 @@ export default function App() {
                       {RELATIONAL_OPTIMIZATIONS.map(opt => (
                         <div
                           key={opt.id}
-                          className={`p-6 rounded-2xl border flex flex-col justify-between ${
-                            theme === 'dark'
+                          className={`p-6 rounded-2xl border flex flex-col justify-between ${theme === 'dark'
                               ? 'bg-slate-900/70 border-slate-800 hover:border-emerald-500/40'
                               : 'bg-white border-slate-200 shadow-sm'
-                          }`}
+                            }`}
                         >
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
@@ -1705,6 +1731,13 @@ export default function App() {
             )}
 
             {/* ============================================================== */}
+            {/* PÁGINA 6.7: DIAGNÓSTICO BUSINESS & ORÇAMENTO DE TI */}
+            {/* ============================================================== */}
+            {currentPage === 'business' && (
+              <BusinessView />
+            )}
+
+            {/* ============================================================== */}
             {/* PÁGINA 6.8: COMPARATIVO CLOUD: AWS VS AZURE */}
             {/* ============================================================== */}
             {currentPage === 'cloud' && (
@@ -1752,11 +1785,10 @@ export default function App() {
 
           {/* FOOTER DO BLOG ENRIQUECIDO COM E-E-A-T */}
           <footer
-            className={`mt-16 border-t py-12 px-6 sm:px-12 ${
-              theme === 'dark'
+            className={`mt-16 border-t py-12 px-6 sm:px-12 ${theme === 'dark'
                 ? 'border-slate-900 bg-slate-950 text-slate-400'
                 : 'border-slate-200 bg-white text-slate-600'
-            }`}
+              }`}
           >
             <div className="max-w-6xl mx-auto space-y-8">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-slate-800/80">
@@ -1804,6 +1836,11 @@ export default function App() {
                     <li>
                       <button onClick={() => navigateTo('function-points')} className="hover:text-cyan-400 transition-colors cursor-pointer">
                         Pontos de Função (APF)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => navigateTo('business')} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                        Diagnóstico Business & TI
                       </button>
                     </li>
                     <li>

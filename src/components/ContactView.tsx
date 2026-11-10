@@ -8,20 +8,45 @@ export function ContactView() {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) return;
 
     setIsSubmitting(true);
-    // Simulação de envio com feedback visual
-    setTimeout(() => {
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch('https://formspree.io/f/mqpqzkvr', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          subject: subject,
+          message: message.trim(),
+          _subject: `[CodeCompare - Contato] ${subject.toUpperCase()}: ${name.trim()}`
+        })
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+        setName('');
+        setEmail('');
+        setMessage('');
+      } else {
+        const data = await response.json().catch(() => ({}));
+        setErrorMessage(data.error || 'Não foi possível entregar a mensagem. Tente novamente ou use o e-mail direto.');
+      }
+    } catch {
+      setErrorMessage('Erro de conexão ao enviar mensagem. Verifique sua internet ou contate diretamente por e-mail.');
+    } finally {
       setIsSubmitting(false);
-      setSubmitted(true);
-      setName('');
-      setEmail('');
-      setMessage('');
-    }, 800);
+    }
   };
 
   return (
@@ -46,13 +71,6 @@ export function ContactView() {
             <h3 className="font-bold text-white text-base">Contato Direto</h3>
             <div className="space-y-3 text-xs">
               <div>
-                <span className="text-slate-500 block font-mono">E-mail Institucional:</span>
-                <a
-                  href="mailto:contato@devedulessa.com.br"
-                  className="text-cyan-400 font-semibold hover:underline block"
-                >
-                  contato@devedulessa.com.br
-                </a>
                 <a
                   href="mailto:eduardolessa2011@gmail.com"
                   className="text-slate-400 hover:text-slate-200 block text-[11px]"
@@ -161,6 +179,13 @@ export function ContactView() {
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 text-xs text-white outline-none leading-relaxed"
                 />
               </div>
+
+              {errorMessage && (
+                <div className="p-3 rounded-xl bg-red-950/80 border border-red-500/40 text-red-300 text-xs flex items-center gap-2">
+                  <AlertCircle size={15} className="text-red-400 shrink-0" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
 
               <button
                 type="submit"

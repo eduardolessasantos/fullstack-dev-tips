@@ -51,7 +51,7 @@ export function AboutView({ onNavigateToContact }: AboutViewProps) {
               Engenheiro de Software Full-Stack & Especialista em Arquitetura Distribuída
             </p>
             <p className="text-xs text-slate-400">
-              contato@devedulessa.com.br • eduardolessa2011@gmail.com • Rio de Janeiro, Brasil
+              devedulessa.com.br • eduardolessa2011@gmail.com • Rio de Janeiro, Brasil
             </p>
           </div>
         </div>
