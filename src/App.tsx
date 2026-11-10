@@ -55,6 +55,7 @@ import { FunctionPointsView } from './components/FunctionPointsView.tsx';
 import { CloudView } from './components/CloudView.tsx';
 import { CoursesView } from './components/CoursesView.tsx';
 import { BusinessView } from './components/BusinessView.tsx';
+import { span } from 'motion/react-client';
 
 export default function App() {
   // Theme state with local persistence
@@ -397,8 +398,8 @@ export default function App() {
     <div className={`${theme} min-h-screen transition-colors duration-200`}>
       <div
         className={`flex flex-col lg:flex-row min-h-screen ${theme === 'dark'
-            ? 'bg-slate-950 text-slate-100'
-            : 'bg-slate-100/70 text-slate-900'
+          ? 'bg-slate-950 text-slate-100'
+          : 'bg-slate-100/70 text-slate-900'
           }`}
       >
         {/* --- SIDEBAR FIXA ESQUERDA (DESKTOP) E DRAWER (MOBILE) --- */}
@@ -447,8 +448,8 @@ export default function App() {
                 id="nav-home-btn"
                 onClick={() => navigateTo('home')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'home'
-                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 font-bold border border-cyan-500/30'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 font-bold border border-cyan-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
               >
                 <Layout size={18} />
@@ -459,8 +460,8 @@ export default function App() {
                 id="nav-articles-btn"
                 onClick={() => navigateTo('articles')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'articles' || currentPage === 'article'
-                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 font-bold border border-cyan-500/30'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 font-bold border border-cyan-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -476,8 +477,8 @@ export default function App() {
                 id="nav-matrix-btn"
                 onClick={() => navigateTo('decision-matrix')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'decision-matrix'
-                    ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/10 text-purple-300 font-bold border border-purple-500/30'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/10 text-purple-300 font-bold border border-purple-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -493,8 +494,8 @@ export default function App() {
                 id="nav-function-points-btn"
                 onClick={() => navigateTo('function-points')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'function-points'
-                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-300 font-bold border border-cyan-500/30'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-300 font-bold border border-cyan-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -510,8 +511,8 @@ export default function App() {
                 id="nav-business-btn"
                 onClick={() => navigateTo('business')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'business'
-                    ? 'bg-gradient-to-r from-cyan-500/20 via-blue-500/15 to-indigo-500/10 text-cyan-300 font-bold border border-cyan-500/30'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  ? 'bg-gradient-to-r from-cyan-500/20 via-blue-500/15 to-indigo-500/10 text-cyan-300 font-bold border border-cyan-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -527,8 +528,8 @@ export default function App() {
                 id="nav-cloud-btn"
                 onClick={() => navigateTo('cloud')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'cloud'
-                    ? 'bg-gradient-to-r from-amber-500/20 via-slate-800 to-sky-500/20 text-amber-300 font-bold border border-amber-500/30'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  ? 'bg-gradient-to-r from-amber-500/20 via-slate-800 to-sky-500/20 text-amber-300 font-bold border border-amber-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -544,8 +545,8 @@ export default function App() {
                 id="nav-courses-btn"
                 onClick={() => navigateTo('courses')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${currentPage === 'courses'
-                    ? 'bg-gradient-to-r from-amber-500/20 via-purple-500/10 to-cyan-500/20 text-amber-300 font-bold border border-amber-500/30'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  ? 'bg-gradient-to-r from-amber-500/20 via-purple-500/10 to-cyan-500/20 text-amber-300 font-bold border border-amber-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -579,8 +580,8 @@ export default function App() {
                     key={item.id}
                     onClick={() => navigateTo('frontend', item.id)}
                     className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'frontend' && activeFrontendTab === item.id
-                        ? 'bg-cyan-500/15 text-cyan-300 font-semibold border-l-2 border-cyan-400'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                      ? 'bg-cyan-500/15 text-cyan-300 font-semibold border-l-2 border-cyan-400'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
                       }`}
                   >
                     <span>{item.name}</span>
@@ -612,8 +613,8 @@ export default function App() {
                     key={item.id}
                     onClick={() => navigateTo('backend', item.id)}
                     className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'backend' && activeBackendLang === item.id
-                        ? 'bg-purple-500/15 text-purple-300 font-semibold border-l-2 border-purple-400'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                      ? 'bg-purple-500/15 text-purple-300 font-semibold border-l-2 border-purple-400'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
                       }`}
                   >
                     <span>{item.name}</span>
@@ -638,8 +639,8 @@ export default function App() {
                 <button
                   onClick={() => navigateTo('database', 'nosql')}
                   className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'database' && activeDbTab === 'nosql'
-                      ? 'bg-emerald-500/15 text-emerald-300 font-semibold border-l-2 border-emerald-400'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                    ? 'bg-emerald-500/15 text-emerald-300 font-semibold border-l-2 border-emerald-400'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
                     }`}
                 >
                   <span>NoSQL Utilities</span>
@@ -648,8 +649,8 @@ export default function App() {
                 <button
                   onClick={() => navigateTo('database', 'relational')}
                   className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'database' && activeDbTab === 'relational'
-                      ? 'bg-emerald-500/15 text-emerald-300 font-semibold border-l-2 border-emerald-400'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                    ? 'bg-emerald-500/15 text-emerald-300 font-semibold border-l-2 border-emerald-400'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
                     }`}
                 >
                   <span>Otimização Relacional</span>
@@ -670,8 +671,8 @@ export default function App() {
                 <button
                   onClick={() => navigateTo('about')}
                   className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'about'
-                      ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                    ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
                     }`}
                 >
                   <span>Sobre o Autor (E-E-A-T)</span>
@@ -680,8 +681,8 @@ export default function App() {
                 <button
                   onClick={() => navigateTo('editorial')}
                   className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'editorial'
-                      ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                    ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
                     }`}
                 >
                   <span>Diretrizes Editoriais</span>
@@ -690,8 +691,8 @@ export default function App() {
                 <button
                   onClick={() => navigateTo('contact')}
                   className={`w-full flex items-center justify-between px-3.5 py-2 rounded-lg transition-all text-xs cursor-pointer ${currentPage === 'contact'
-                      ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                    ? 'bg-blue-500/15 text-blue-300 font-semibold border-l-2 border-blue-400'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
                     }`}
                 >
                   <span>Fale Conosco</span>
@@ -725,8 +726,8 @@ export default function App() {
           {/* HEADER STICKY COM BUSCA & TEMA */}
           <header
             className={`sticky top-0 z-40 backdrop-blur-xl border-b transition-colors ${theme === 'dark'
-                ? 'bg-slate-950/85 border-slate-800/80'
-                : 'bg-white/85 border-slate-200/90 shadow-sm'
+              ? 'bg-slate-950/85 border-slate-800/80'
+              : 'bg-white/85 border-slate-200/90 shadow-sm'
               }`}
           >
             <div className="max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
@@ -752,8 +753,8 @@ export default function App() {
               >
                 <div
                   className={`flex items-center gap-2.5 px-3.5 py-2 rounded-full border transition-all ${theme === 'dark'
-                      ? 'bg-slate-900/80 border-slate-800 focus-within:border-cyan-500/60 focus-within:ring-2 focus-within:ring-cyan-500/20'
-                      : 'bg-slate-100 border-slate-300 focus-within:border-cyan-600 focus-within:ring-2 focus-within:ring-cyan-500/20'
+                    ? 'bg-slate-900/80 border-slate-800 focus-within:border-cyan-500/60 focus-within:ring-2 focus-within:ring-cyan-500/20'
+                    : 'bg-slate-100 border-slate-300 focus-within:border-cyan-600 focus-within:ring-2 focus-within:ring-cyan-500/20'
                     }`}
                 >
                   <button
@@ -843,8 +844,8 @@ export default function App() {
                   id="theme-toggle-btn"
                   onClick={toggleTheme}
                   className={`p-2.5 rounded-full border transition-all cursor-pointer ${theme === 'dark'
-                      ? 'bg-slate-900 border-slate-800 hover:bg-slate-800 text-amber-400'
-                      : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-700 shadow-sm'
+                    ? 'bg-slate-900 border-slate-800 hover:bg-slate-800 text-amber-400'
+                    : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-700 shadow-sm'
                     }`}
                   title={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
                 >
@@ -956,8 +957,8 @@ export default function App() {
                         key={article.id}
                         onClick={() => openArticle(article.id)}
                         className={`group p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${theme === 'dark'
-                            ? 'bg-slate-900/90 border-slate-800 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/10'
-                            : 'bg-white border-slate-200 hover:border-cyan-500/50 shadow-sm hover:shadow-md'
+                          ? 'bg-slate-900/90 border-slate-800 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/10'
+                          : 'bg-white border-slate-200 hover:border-cyan-500/50 shadow-sm hover:shadow-md'
                           }`}
                       >
                         <div>
@@ -965,10 +966,10 @@ export default function App() {
                           <div className="flex items-center justify-between text-xs mb-3">
                             <span
                               className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] ${article.category === 'frontend'
-                                  ? 'bg-cyan-500/10 text-cyan-400'
-                                  : article.category === 'backend'
-                                    ? 'bg-purple-500/10 text-purple-400'
-                                    : 'bg-emerald-500/10 text-emerald-400'
+                                ? 'bg-cyan-500/10 text-cyan-400'
+                                : article.category === 'backend'
+                                  ? 'bg-purple-500/10 text-purple-400'
+                                  : 'bg-emerald-500/10 text-emerald-400'
                                 }`}
                             >
                               {article.tag}
@@ -1097,7 +1098,7 @@ export default function App() {
                     <div className="space-y-2 max-w-xl">
                       <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
                         <Briefcase size={14} />
-                        <span>Novo // Diagnóstico B2B & Consultoria de Software</span>
+                        <span>Diagnóstico B2B & Consultoria de Software</span>
                       </div>
                       <h3 className="text-xl sm:text-2xl font-black text-white">
                         Quer orçar a digitalização de processos para seu nicho de mercado?
@@ -1145,8 +1146,8 @@ export default function App() {
                     <button
                       onClick={() => setSplitViewMode(!splitViewMode)}
                       className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer ${splitViewMode
-                          ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50'
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
                         }`}
                       title="Alternar entre ver 1 aba por vez ou todos lado a lado"
                     >
@@ -1166,8 +1167,8 @@ export default function App() {
                             key={tab.id}
                             onClick={() => setActiveFrontendTab(tab.id as FrontendFramework)}
                             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${activeFrontendTab === tab.id
-                                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
-                                : 'text-slate-400 hover:text-white'
+                              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                              : 'text-slate-400 hover:text-white'
                               }`}
                           >
                             {tab.label}
@@ -1247,10 +1248,10 @@ export default function App() {
                             code={item.codes[activeFrontendTab].code}
                             language={item.codes[activeFrontendTab].lang}
                             filename={`${activeFrontendTab === 'angular'
-                                ? 'component.ts'
-                                : activeFrontendTab === 'vue'
-                                  ? 'Component.vue'
-                                  : 'Component.tsx'
+                              ? 'component.ts'
+                              : activeFrontendTab === 'vue'
+                                ? 'Component.vue'
+                                : 'Component.tsx'
                               }`}
                             theme={theme}
                           />
@@ -1298,8 +1299,8 @@ export default function App() {
                         key={langKey}
                         onClick={() => setActiveBackendLang(langKey)}
                         className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${isActive
-                            ? 'bg-purple-500/15 border-purple-500/60 text-white shadow-lg shadow-purple-500/10'
-                            : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                          ? 'bg-purple-500/15 border-purple-500/60 text-white shadow-lg shadow-purple-500/10'
+                          : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                           }`}
                       >
                         <span className="text-[10px] font-mono uppercase font-bold tracking-wider opacity-60 block mb-1">
@@ -1507,8 +1508,8 @@ export default function App() {
                         <div
                           key={opt.id}
                           className={`p-6 rounded-2xl border flex flex-col justify-between ${theme === 'dark'
-                              ? 'bg-slate-900/70 border-slate-800 hover:border-emerald-500/40'
-                              : 'bg-white border-slate-200 shadow-sm'
+                            ? 'bg-slate-900/70 border-slate-800 hover:border-emerald-500/40'
+                            : 'bg-white border-slate-200 shadow-sm'
                             }`}
                         >
                           <div className="space-y-3">
@@ -1786,8 +1787,8 @@ export default function App() {
           {/* FOOTER DO BLOG ENRIQUECIDO COM E-E-A-T */}
           <footer
             className={`mt-16 border-t py-12 px-6 sm:px-12 ${theme === 'dark'
-                ? 'border-slate-900 bg-slate-950 text-slate-400'
-                : 'border-slate-200 bg-white text-slate-600'
+              ? 'border-slate-900 bg-slate-950 text-slate-400'
+              : 'border-slate-200 bg-white text-slate-600'
               }`}
           >
             <div className="max-w-6xl mx-auto space-y-8">
