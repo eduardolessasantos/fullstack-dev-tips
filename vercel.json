@@ -1,6 +1,19 @@
 {
   "cleanUrls": false,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "devedulessa.com.br"
+        }
+      ],
+      "destination": "https://www.devedulessa.com.br/:path*",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/ads.txt",

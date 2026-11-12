@@ -193,6 +193,118 @@ export default function App() {
     };
   }, []);
 
+  // Sincronização Dinâmica de SEO, Canonical Tag e Metadados para Googlebot e Redes Sociais
+  useEffect(() => {
+    let canonicalPath = '';
+    let pageTitle = 'CodeCompare • Arquitetura de Software, Benchmarks & Deep Dives';
+    let pageDesc = 'Blog técnico e análises arquiteturais para engenheiros de software: benchmarks de latência, comparativos aprofundados entre frameworks frontend, APIs backend, bancos de dados e provedores Cloud.';
+
+    switch (currentPage) {
+      case 'home':
+        canonicalPath = '';
+        pageTitle = 'CodeCompare • Arquitetura de Software, Benchmarks & Deep Dives';
+        break;
+      case 'article': {
+        const found = DETAILED_ARTICLES.find(a => a.id === selectedArticleId);
+        if (found) {
+          canonicalPath = `artigo/${found.slug || found.id}`;
+          pageTitle = `${found.title} • CodeCompare`;
+          pageDesc = found.summary;
+        } else {
+          canonicalPath = 'artigos';
+          pageTitle = 'Artigos Técnicos & Deep Dives • CodeCompare';
+        }
+        break;
+      }
+      case 'articles':
+        canonicalPath = 'artigos';
+        pageTitle = 'Artigos Técnicos, Benchmarks & Deep Dives • CodeCompare';
+        break;
+      case 'business':
+        canonicalPath = 'business';
+        pageTitle = 'Diagnóstico de TI & Orçamento Empresarial de Software • CodeCompare';
+        pageDesc = 'Simule custos de digitalização, investimento em desenvolvimento (Capex/Opex), prazos em sprints e stacks recomendadas adaptadas ao seu nicho comercial.';
+        break;
+      case 'function-points':
+        canonicalPath = 'pontos-de-funcao';
+        pageTitle = 'Análise de Pontos de Função (APF) & Métricas IFPUG/NESMA • CodeCompare';
+        break;
+      case 'decision-matrix':
+        canonicalPath = 'matriz-decisao';
+        pageTitle = 'Matriz de Decisão Arquitetural & Trade-Offs • CodeCompare';
+        break;
+      case 'cloud':
+        canonicalPath = 'cloud';
+        pageTitle = 'Comparativo Cloud: AWS vs Microsoft Azure • CodeCompare';
+        break;
+      case 'courses':
+        canonicalPath = 'formacoes';
+        pageTitle = 'Formações & Certificações Oficiais Cloud e Full-Stack • CodeCompare';
+        break;
+      case 'frontend':
+        canonicalPath = 'frontend';
+        pageTitle = 'Comparativo Frontend: React vs Vue 3 vs Angular 18 • CodeCompare';
+        break;
+      case 'backend':
+        canonicalPath = 'backend';
+        pageTitle = 'Comparativo Backend: .NET 8 vs Java vs Python vs Go • CodeCompare';
+        break;
+      case 'database':
+        canonicalPath = 'database';
+        pageTitle = 'Banco de Dados: NoSQL vs Otimização Relacional SQL • CodeCompare';
+        break;
+      case 'about':
+        canonicalPath = 'sobre';
+        pageTitle = 'Sobre o Autor (Eduardo Lessa) & Metodologia E-E-A-T • CodeCompare';
+        break;
+      case 'editorial':
+        canonicalPath = 'diretrizes-editoriais';
+        pageTitle = 'Diretrizes Editoriais & Critérios de Imparcialidade • CodeCompare';
+        break;
+      case 'contact':
+        canonicalPath = 'contato';
+        pageTitle = 'Fale Conosco & Envie Sugestões Técnicas • CodeCompare';
+        break;
+      case 'terms':
+        canonicalPath = 'termos';
+        pageTitle = 'Termos de Uso & Responsabilidade Técnica • CodeCompare';
+        break;
+      default:
+        canonicalPath = '';
+        break;
+    }
+
+    const fullCanonicalUrl = `https://www.devedulessa.com.br/${canonicalPath}`;
+    document.title = pageTitle;
+
+    // Atualiza ou cria a tag canonical no <head>
+    let linkCanonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!linkCanonical) {
+      linkCanonical = document.createElement('link');
+      linkCanonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(linkCanonical);
+    }
+    linkCanonical.setAttribute('href', fullCanonicalUrl);
+
+    // Atualiza meta og:url
+    let metaOgUrl = document.querySelector('meta[property="og:url"]') as HTMLMetaElement | null;
+    if (metaOgUrl) {
+      metaOgUrl.setAttribute('content', fullCanonicalUrl);
+    }
+
+    // Atualiza meta og:title
+    let metaOgTitle = document.querySelector('meta[property="og:title"]') as HTMLMetaElement | null;
+    if (metaOgTitle) {
+      metaOgTitle.setAttribute('content', pageTitle);
+    }
+
+    // Atualiza meta description
+    let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (metaDesc && pageDesc) {
+      metaDesc.setAttribute('content', pageDesc);
+    }
+  }, [currentPage, selectedArticleId]);
+
   // Toggle and persist theme
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
