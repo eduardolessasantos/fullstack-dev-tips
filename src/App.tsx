@@ -55,9 +55,12 @@ import { FunctionPointsView } from './components/FunctionPointsView.tsx';
 import { CloudView } from './components/CloudView.tsx';
 import { CoursesView } from './components/CoursesView.tsx';
 import { BusinessView } from './components/BusinessView.tsx';
-import { span } from 'motion/react-client';
+import { useLanguage } from './i18n/LanguageContext.tsx';
+import { LanguageSelector } from './components/LanguageSelector.tsx';
 
 export default function App() {
+  const { t, language } = useLanguage();
+
   // Theme state with local persistence
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof window !== 'undefined') {
@@ -565,7 +568,7 @@ export default function App() {
                   }`}
               >
                 <Layout size={18} />
-                <span>Início / Destaques</span>
+                <span>{t.nav.home}</span>
               </button>
 
               <button
@@ -578,10 +581,10 @@ export default function App() {
               >
                 <div className="flex items-center gap-3">
                   <BookOpen size={18} />
-                  <span>Artigos Técnicos</span>
+                  <span>{t.nav.articles}</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono font-bold">
-                  6 Deep Dives
+                  Deep Dives
                 </span>
               </button>
 
@@ -595,7 +598,7 @@ export default function App() {
               >
                 <div className="flex items-center gap-3">
                   <Compass size={18} className="text-purple-400" />
-                  <span>Matriz de Decisão</span>
+                  <span>{t.nav.decisionMatrix}</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono font-bold">
                   Matriz
@@ -612,7 +615,7 @@ export default function App() {
               >
                 <div className="flex items-center gap-3">
                   <Calculator size={18} className="text-cyan-400" />
-                  <span>Pontos de Função</span>
+                  <span>{t.nav.functionPoints}</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono font-bold">
                   APF
@@ -629,7 +632,7 @@ export default function App() {
               >
                 <div className="flex items-center gap-3">
                   <Briefcase size={18} className="text-cyan-400" />
-                  <span>Diagnóstico Business</span>
+                  <span>{t.nav.business}</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-gradient-to-r from-cyan-500/30 to-blue-500/30 text-cyan-300 font-mono font-bold">
                   $
@@ -646,7 +649,7 @@ export default function App() {
               >
                 <div className="flex items-center gap-3">
                   <Cloud size={18} className="text-amber-400" />
-                  <span>Cloud: AWS vs Azure</span>
+                  <span>{t.nav.cloud}</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
                   Cloud
@@ -663,7 +666,7 @@ export default function App() {
               >
                 <div className="flex items-center gap-3">
                   <GraduationCap size={18} className="text-amber-400" />
-                  <span>Formações & Certificações</span>
+                  <span>{t.nav.courses}</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono font-bold">
                   Trilhas
@@ -787,7 +790,7 @@ export default function App() {
                     : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
                     }`}
                 >
-                  <span>Sobre o Autor (E-E-A-T)</span>
+                  <span>{t.nav.about}</span>
                   <ChevronRight size={14} className="opacity-40" />
                 </button>
                 <button
@@ -797,7 +800,7 @@ export default function App() {
                     : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
                     }`}
                 >
-                  <span>Diretrizes Editoriais</span>
+                  <span>{t.nav.editorial}</span>
                   <ChevronRight size={14} className="opacity-40" />
                 </button>
                 <button
@@ -807,7 +810,7 @@ export default function App() {
                     : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
                     }`}
                 >
-                  <span>Fale Conosco</span>
+                  <span>{t.nav.contact}</span>
                   <ChevronRight size={14} className="opacity-40" />
                 </button>
               </div>
@@ -821,13 +824,13 @@ export default function App() {
               className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-900/60 transition-colors cursor-pointer"
             >
               <ShieldCheck size={16} className="text-cyan-400" />
-              <span>Privacidade & LGPD</span>
+              <span>{t.nav.privacy} & LGPD</span>
             </button>
             <div className="px-3 pt-2 text-[10px] text-slate-400 flex items-center justify-between">
               <span>CodeCompare v2.4</span>
               <span className="text-emerald-400 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Online
+                {t.common.online}
               </span>
             </div>
           </div>
@@ -871,8 +874,8 @@ export default function App() {
                 >
                   <button
                     type="submit"
-                    aria-label="Buscar"
-                    title="Buscar artigos e comparações"
+                    aria-label={t.common.searchArticlesAndComparisons}
+                    title={t.common.searchArticlesAndComparisons}
                     className="text-slate-500 hover:text-cyan-400 p-0.5 cursor-pointer shrink-0 transition-colors"
                   >
                     <Search size={16} />
@@ -880,7 +883,7 @@ export default function App() {
                   <input
                     id="search-input"
                     type="text"
-                    placeholder="Buscar stack, padrão, CRUD ou query..."
+                    placeholder={t.common.searchPlaceholder}
                     className="bg-transparent border-none outline-none text-xs sm:text-sm w-full placeholder:text-slate-500"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
@@ -890,7 +893,7 @@ export default function App() {
                       type="button"
                       onClick={() => setSearchQuery('')}
                       className="text-slate-500 hover:text-slate-300 p-0.5 cursor-pointer"
-                      aria-label="Limpar busca"
+                      aria-label={t.common.clearSearch}
                     >
                       <X size={14} />
                     </button>
@@ -901,8 +904,8 @@ export default function App() {
                 {searchResults.length > 0 && (
                   <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
                     <div className="px-4 py-2 bg-slate-950/80 border-b border-slate-800 text-[11px] font-mono text-cyan-400 flex items-center justify-between">
-                      <span>Sugestões para "{searchQuery}"</span>
-                      <span>{searchResults.length} encontradas</span>
+                      <span>{t.common.searchSuggestions} "{searchQuery}"</span>
+                      <span>{searchResults.length} {t.common.searchFound}</span>
                     </div>
                     <div className="divide-y divide-slate-800/60 max-h-80 overflow-y-auto">
                       {/* Opção explícita de submissão para listagem filtrada */}
@@ -914,7 +917,7 @@ export default function App() {
                         <div className="flex items-center gap-2">
                           <Search size={14} className="text-cyan-400 shrink-0" />
                           <span className="text-xs text-cyan-300 font-semibold">
-                            Filtrar artigos por <strong className="text-white">"{searchQuery}"</strong>
+                            {t.common.filterArticlesBy} <strong className="text-white">"{searchQuery}"</strong>
                           </span>
                         </div>
                         <ArrowRight size={14} className="text-cyan-400 group-hover:translate-x-1 transition-transform" />
@@ -950,8 +953,9 @@ export default function App() {
                 )}
               </form>
 
-              {/* Actions: Theme Toggle + LGPD Policy */}
+              {/* Actions: Language Selector + Theme Toggle */}
               <div className="flex items-center gap-2">
+                <LanguageSelector theme={theme} />
                 <button
                   id="theme-toggle-btn"
                   onClick={toggleTheme}
@@ -959,7 +963,7 @@ export default function App() {
                     ? 'bg-slate-900 border-slate-800 hover:bg-slate-800 text-amber-400'
                     : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-700 shadow-sm'
                     }`}
-                  title={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+                  title={theme === 'dark' ? t.common.toggleThemeLight : t.common.toggleThemeDark}
                 >
                   {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
