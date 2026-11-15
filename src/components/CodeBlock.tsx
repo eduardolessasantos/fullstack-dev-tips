@@ -12,6 +12,7 @@ import 'prismjs/components/prism-go';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-bash';
+import { useLanguage } from '../i18n/LanguageContext.tsx';
 
 interface CodeBlockProps {
   code: string;
@@ -28,6 +29,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
   theme = 'dark',
   showLineNumbers = true
 }) => {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
@@ -98,23 +100,23 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 
         <div className="flex items-center gap-3">
           <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
-            {lineCount} {lineCount === 1 ? 'linha' : 'linhas'}
+            {lineCount} {lineCount === 1 ? t.codeBlock.line : t.codeBlock.lines}
           </span>
           <button
             id={`copy-btn-${Math.random().toString(36).substring(2, 7)}`}
             onClick={copyToClipboard}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all cursor-pointer"
-            title="Copiar código para a área de transferência"
+            title={t.codeBlock.copyTitle}
           >
             {copied ? (
               <>
                 <Check size={13} className="text-emerald-400 animate-in zoom-in-50 duration-200" />
-                <span className="text-emerald-400 font-semibold">Copiado!</span>
+                <span className="text-emerald-400 font-semibold">{t.codeBlock.copied}</span>
               </>
             ) : (
               <>
                 <Copy size={13} />
-                <span>Copiar</span>
+                <span>{t.codeBlock.copy}</span>
               </>
             )}
           </button>

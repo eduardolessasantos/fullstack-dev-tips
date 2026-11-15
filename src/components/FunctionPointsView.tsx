@@ -5,38 +5,26 @@ import {
   Cpu,
   Clock,
   CheckCircle2,
-  AlertCircle,
-  HelpCircle,
   BarChart3,
-  TrendingDown,
-  TrendingUp,
   ShieldCheck,
   Code,
   Database,
-  Users,
   Calendar,
-  Sparkles,
   Info,
   ChevronRight,
-  ArrowRight,
   Download,
   FileSpreadsheet,
   Check
 } from 'lucide-react';
-import {
-  FP_ELEMENT_WEIGHTS,
-  TECH_FP_METRICS,
-  FINTECH_CASE_STUDY,
-  GENERAL_SYSTEM_CHARACTERISTICS,
-  TechProductivityMetric
-} from '../data/functionPointsData.ts';
+import { useLanguage, useTranslationNamespace } from '../i18n/LanguageContext';
 
 export const FunctionPointsView: React.FC = () => {
+  const { t } = useLanguage();
+  const { data: tools } = useTranslationNamespace('engineeringTools');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'backend' | 'frontend' | 'database'>('all');
   const [showGSCList, setShowGSCList] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
-  // Estados da Calculadora Interativa
   const [counts, setCounts] = useState({
     aliLow: 2,
     aliMed: 2,
@@ -62,7 +50,12 @@ export const FunctionPointsView: React.FC = () => {
   const [teamSize, setTeamSize] = useState<number>(4);
   const [sprintWeeks, setSprintWeeks] = useState<number>(2);
 
-  // Fator de Ajuste de Complexidade (VAF)
+  const fpMetrics = tools?.fpMetrics ?? [];
+  const fpWeights = tools?.fpWeights ?? [];
+  const fpCaseStudy = tools?.fpCaseStudy ?? [];
+  const fpGscList = tools?.fpGscList ?? [];
+  const fpUi = tools?.fpUi;
+
   const vafFactor = useMemo(() => {
     switch (complexityLevel) {
       case 'low':
@@ -78,7 +71,6 @@ export const FunctionPointsView: React.FC = () => {
     }
   }, [complexityLevel]);
 
-  // Cálculo de Pontos de Função Não Ajustados (PFNA)
   const calculationSummary = useMemo(() => {
     const ali = counts.aliLow * 7 + counts.aliMed * 10 + counts.aliHigh * 15;
     const aie = counts.aieLow * 5 + counts.aieMed * 7 + counts.aieHigh * 10;
@@ -91,12 +83,22 @@ export const FunctionPointsView: React.FC = () => {
     const pfna = dataFunctions + transactionFunctions;
     const pfa = Math.round(pfna * vafFactor * 10) / 10;
 
-    // Métricas por stack
-    const beMetric = TECH_FP_METRICS.find(m => m.tech === selectedBackend) || TECH_FP_METRICS[1];
-    const feMetric = TECH_FP_METRICS.find(m => m.tech === selectedFrontend) || TECH_FP_METRICS[4];
-    const dbMetric = TECH_FP_METRICS.find(m => m.tech === selectedDb) || TECH_FP_METRICS[6];
+    const fallbackMetric = {
+      tech: '',
+      name: '',
+      category: 'backend' as const,
+      hoursPerFP: { min: 0, avg: 0, max: 0 },
+      slocPerFP: 0,
+      maintenanceHoursPerYear: 0,
+      defectDensityPer1000FP: 0,
+      recommendedUseCase: '',
+      productivityFactors: []
+    };
 
-    // Média ponderada de esforço full-stack: 50% backend, 35% frontend, 15% database
+    const beMetric = fpMetrics.find(m => m.tech === selectedBackend) || fpMetrics[1] || fallbackMetric;
+    const feMetric = fpMetrics.find(m => m.tech === selectedFrontend) || fpMetrics[4] || fallbackMetric;
+    const dbMetric = fpMetrics.find(m => m.tech === selectedDb) || fpMetrics[6] || fallbackMetric;
+
     const blendedHoursPerFP =
       beMetric.hoursPerFP.avg * 0.5 +
       feMetric.hoursPerFP.avg * 0.35 +
@@ -104,25 +106,21 @@ export const FunctionPointsView: React.FC = () => {
 
     const totalHours = Math.round(pfa * blendedHoursPerFP);
 
-    // Linhas de código estimadas (KSLOC)
     const blendedSlocPerFP =
       beMetric.slocPerFP * 0.5 + feMetric.slocPerFP * 0.35 + dbMetric.slocPerFP * 0.15;
     const estimatedKsloc = Math.round((pfa * blendedSlocPerFP) / 100) / 10;
 
-    // Projeção temporal (Horas úteis por dev por sprint de 2 semanas = ~65h considerando cerimônias ágeis)
     const productiveHoursPerDevPerWeek = 32.5;
     const sprintCapacityHours = teamSize * productiveHoursPerDevPerWeek * sprintWeeks;
     const estimatedSprints = sprintCapacityHours > 0 ? Math.ceil((totalHours / sprintCapacityHours) * 10) / 10 : 0;
     const estimatedWeeks = Math.round(estimatedSprints * sprintWeeks);
 
-    // Defeitos esperados em produção
     const blendedDefectRate =
-      (beMetric.defectDensityPer1000FP * 0.5 +
-        feMetric.defectDensityPer1000FP * 0.35 +
-        dbMetric.defectDensityPer1000FP * 0.15);
+      beMetric.defectDensityPer1000FP * 0.5 +
+      feMetric.defectDensityPer1000FP * 0.35 +
+      dbMetric.defectDensityPer1000FP * 0.15;
     const expectedDefects = Math.round((pfa / 1000) * blendedDefectRate * 10) / 10;
 
-    // Manutenção anual (horas/ano)
     const annualMaintenanceHours = Math.round(
       pfa *
         (beMetric.maintenanceHoursPerYear * 0.5 +
@@ -151,12 +149,12 @@ export const FunctionPointsView: React.FC = () => {
       feMetric,
       dbMetric
     };
-  }, [counts, vafFactor, selectedBackend, selectedFrontend, selectedDb, teamSize, sprintWeeks]);
+  }, [fpMetrics, counts, vafFactor, selectedBackend, selectedFrontend, selectedDb, teamSize, sprintWeeks]);
 
   const filteredMetrics = useMemo(() => {
-    if (activeCategoryFilter === 'all') return TECH_FP_METRICS;
-    return TECH_FP_METRICS.filter(m => m.category === activeCategoryFilter);
-  }, [activeCategoryFilter]);
+    if (activeCategoryFilter === 'all') return fpMetrics;
+    return fpMetrics.filter(m => m.category === activeCategoryFilter);
+  }, [fpMetrics, activeCategoryFilter]);
 
   const updateCount = (key: keyof typeof counts, delta: number) => {
     setCounts(prev => ({
@@ -165,65 +163,65 @@ export const FunctionPointsView: React.FC = () => {
     }));
   };
 
-  // Conteúdo CSV pré-calculado com codificação UTF-8 com BOM
   const csvContent = useMemo(() => {
+    if (!fpUi) return '';
     const BOM = '\uFEFF';
     const sep = ';';
+    const csv = fpUi.csv;
 
     const sanitize = (val: string | number) => {
       const str = String(val).replace(/"/g, '""');
       return `"${str}"`;
     };
 
+    const comps = csv.components;
     const rows: string[][] = [
-      ['RELATÓRIO DE DIMENSIONAMENTO E ESTIMATIVA DE PONTOS DE FUNÇÃO (APF)'],
-      ['Portal', 'CodeCompare - Dev Tech Blog'],
-      ['Metodologia Normativa', 'IFPUG CPM 4.3.1 (ISO/IEC 20926:2009) & NESMA'],
-      ['Data de Geração', new Date().toLocaleString('pt-BR')],
+      [csv.docTitle],
+      [csv.portalLabel, csv.portalVal],
+      [csv.methodLabel, csv.methodVal],
+      [csv.dateLabel, new Date().toLocaleString(fpUi.dateLocale)],
       [''],
-      ['--- 1. RESUMO EXECUTIVO ---'],
-      ['Métrica', 'Valor', 'Unidade', 'Observação'],
-      ['Pontos de Função Não Ajustados (PFNA)', String(calculationSummary.pfna), 'PF', 'Soma de funções de dados e transações'],
-      ['Classificação de Complexidade', complexityLevel.toUpperCase(), '-', 'Baseada nos 14 fatores GSC'],
-      ['Fator de Ajuste (VAF)', vafFactor.toFixed(2), 'Fator', 'Multiplicador de requisitos não funcionais'],
-      ['Pontos de Função Ajustados (PFA)', String(calculationSummary.pfa), 'PFA', 'Tamanho funcional normatizado final'],
-      ['Produtividade Média Blended', String(calculationSummary.blendedHoursPerFP), 'h/PF', 'Média ponderada da stack selecionada'],
-      ['Esforço Total Estimado', String(calculationSummary.totalHours), 'horas', 'Horas líquidas de desenvolvimento'],
-      ['Tamanho da Equipe', String(teamSize), 'desenvolvedores', 'Equipe dedicada de engenharia'],
-      ['Duração da Sprint', String(sprintWeeks), 'semanas', 'Ciclo de iteração do Scrum'],
-      ['Prazo Estimado de Entrega', String(calculationSummary.estimatedSprints), 'sprints', `Aproximadamente ${calculationSummary.estimatedWeeks} semanas`],
-      ['Código Fonte Equivalente (KSLOC)', String(calculationSummary.estimatedKsloc), 'KSLOC', `~${Math.round(calculationSummary.estimatedKsloc * 1000)} linhas de código`],
-      ['Densidade de Defeitos Projetada', String(calculationSummary.expectedDefects), 'bugs', 'Estimativa de incidentes em produção no 1º ano'],
-      ['Sustentação Anual Projetada', String(calculationSummary.annualMaintenanceHours), 'h/ano', 'Manutenção corretiva e preventiva anual'],
+      [csv.sec1Title],
+      csv.sec1Headers,
+      [csv.pfnaLabel, String(calculationSummary.pfna), fpUi.pfUnit, csv.pfnaNote],
+      [csv.complexityLabel, complexityLevel.toUpperCase(), '-', csv.complexityNote],
+      [csv.vafLabel, vafFactor.toFixed(2), fpUi.vafLabel, csv.vafNote],
+      [csv.pfaLabel, String(calculationSummary.pfa), 'PFA', csv.pfaNote],
+      [csv.avgProdLabel, String(calculationSummary.blendedHoursPerFP), 'h/PF', csv.avgProdNote],
+      [csv.effortLabel, String(calculationSummary.totalHours), fpUi.hoursUnit, csv.effortNote],
+      [csv.teamLabel, String(teamSize), fpUi.devsUnit, csv.teamNote],
+      [csv.sprintLabel, String(sprintWeeks), fpUi.weeksUnit, csv.sprintNote],
+      [csv.timelineLabel, String(calculationSummary.estimatedSprints), fpUi.sprintsUnit, `${csv.timelineApproxPrefix} ${calculationSummary.estimatedWeeks} ${csv.timelineApproxSuffix}`],
+      [csv.kslocLabel, String(calculationSummary.estimatedKsloc), 'KSLOC', `${csv.kslocLinesPrefix}${Math.round(calculationSummary.estimatedKsloc * 1000)} ${csv.kslocLinesSuffix}`],
+      [csv.defectsLabel, String(calculationSummary.expectedDefects), fpUi.bugsUnit, csv.defectsNote],
+      [csv.maintLabel, String(calculationSummary.annualMaintenanceHours), fpUi.perYearUnit, csv.maintNote],
       [''],
-      ['--- 2. CONTAGEM DETALHADA POR TIPO DE FUNÇÃO (IFPUG) ---'],
-      ['Sigla', 'Componente Funcional', 'Baixa (qtd)', 'Média (qtd)', 'Alta (qtd)', 'Total Ocorrências', 'Subtotal PF'],
-      ['ALI', 'Arquivos Lógicos Internos (Tabelas / Entidades Próprias)', String(counts.aliLow), String(counts.aliMed), String(counts.aliHigh), String(counts.aliLow + counts.aliMed + counts.aliHigh), String(calculationSummary.ali)],
-      ['AIE', 'Arquivos de Interface Externa (APIs Consumidas / Bancos Externos)', String(counts.aieLow), String(counts.aieMed), String(counts.aieHigh), String(counts.aieLow + counts.aieMed + counts.aieHigh), String(calculationSummary.aie)],
-      ['EE', 'Entradas Externas (POST, PUT, DELETE, Gravações)', String(counts.eeLow), String(counts.eeMed), String(counts.eeHigh), String(counts.eeLow + counts.eeMed + counts.eeHigh), String(calculationSummary.ee)],
-      ['SE', 'Saídas Externas (Relatórios, Cálculos, Webhooks)', String(counts.seLow), String(counts.seMed), String(counts.seHigh), String(counts.seLow + counts.seMed + counts.seHigh), String(calculationSummary.se)],
-      ['CE', 'Consultas Externas (GETs simples, buscas paginadas)', String(counts.ceLow), String(counts.ceMed), String(counts.ceHigh), String(counts.ceLow + counts.ceMed + counts.ceHigh), String(calculationSummary.ce)],
-      ['Subtotal Funções de Dados (ALI + AIE)', '-', '-', '-', '-', String(counts.aliLow + counts.aliMed + counts.aliHigh + counts.aieLow + counts.aieMed + counts.aieHigh), String(calculationSummary.dataFunctions)],
-      ['Subtotal Funções de Transação (EE + SE + CE)', '-', '-', '-', '-', String(counts.eeLow + counts.eeMed + counts.eeHigh + counts.seLow + counts.seMed + counts.seHigh + counts.ceLow + counts.ceMed + counts.ceHigh), String(calculationSummary.transactionFunctions)],
-      ['Total Geral PFNA', '-', '-', '-', '-', '-', String(calculationSummary.pfna)],
+      [csv.sec2Title],
+      csv.sec2Headers,
+      [comps[0].abbr, comps[0].name, String(counts.aliLow), String(counts.aliMed), String(counts.aliHigh), String(counts.aliLow + counts.aliMed + counts.aliHigh), String(calculationSummary.ali)],
+      [comps[1].abbr, comps[1].name, String(counts.aieLow), String(counts.aieMed), String(counts.aieHigh), String(counts.aieLow + counts.aieMed + counts.aieHigh), String(calculationSummary.aie)],
+      [comps[2].abbr, comps[2].name, String(counts.eeLow), String(counts.eeMed), String(counts.eeHigh), String(counts.eeLow + counts.eeMed + counts.eeHigh), String(calculationSummary.ee)],
+      [comps[3].abbr, comps[3].name, String(counts.seLow), String(counts.seMed), String(counts.seHigh), String(counts.seLow + counts.seMed + counts.seHigh), String(calculationSummary.se)],
+      [comps[4].abbr, comps[4].name, String(counts.ceLow), String(counts.ceMed), String(counts.ceHigh), String(counts.ceLow + counts.ceMed + counts.ceHigh), String(calculationSummary.ce)],
+      [csv.subtotalDataLabel, '-', '-', '-', '-', String(counts.aliLow + counts.aliMed + counts.aliHigh + counts.aieLow + counts.aieMed + counts.aieHigh), String(calculationSummary.dataFunctions)],
+      [csv.subtotalTxLabel, '-', '-', '-', '-', String(counts.eeLow + counts.eeMed + counts.eeHigh + counts.seLow + counts.seMed + counts.seHigh + counts.ceLow + counts.ceMed + counts.ceHigh), String(calculationSummary.transactionFunctions)],
+      [csv.totalPfnaLabel, '-', '-', '-', '-', '-', String(calculationSummary.pfna)],
       [''],
-      ['--- 3. COMPOSIÇÃO DA STACK TECNOLÓGICA E ESFORÇO PONDERADO ---'],
-      ['Camada', 'Tecnologia Selecionada', 'Taxa Produtividade (h/PF)', 'SLOC / PF', 'Distribuição de Esforço (%)', 'Horas Estimadas (h)'],
-      ['Backend', calculationSummary.beMetric.name, String(calculationSummary.beMetric.hoursPerFP.avg), String(calculationSummary.beMetric.slocPerFP), '50%', String(Math.round(calculationSummary.totalHours * 0.5))],
-      ['Frontend', calculationSummary.feMetric.name, String(calculationSummary.feMetric.hoursPerFP.avg), String(calculationSummary.feMetric.slocPerFP), '35%', String(Math.round(calculationSummary.totalHours * 0.35))],
-      ['Banco de Dados', calculationSummary.dbMetric.name, String(calculationSummary.dbMetric.hoursPerFP.avg), String(calculationSummary.dbMetric.slocPerFP), '15%', String(Math.round(calculationSummary.totalHours * 0.15))],
-      ['Total Integrado', 'Stack Full-Stack Selecionada', String(calculationSummary.blendedHoursPerFP), '-', '100%', String(calculationSummary.totalHours)]
+      [csv.sec3Title],
+      csv.sec3Headers,
+      [csv.layerBackend, calculationSummary.beMetric.name, String(calculationSummary.beMetric.hoursPerFP.avg), String(calculationSummary.beMetric.slocPerFP), '50%', String(Math.round(calculationSummary.totalHours * 0.5))],
+      [csv.layerFrontend, calculationSummary.feMetric.name, String(calculationSummary.feMetric.hoursPerFP.avg), String(calculationSummary.feMetric.slocPerFP), '35%', String(Math.round(calculationSummary.totalHours * 0.35))],
+      [csv.layerDb, calculationSummary.dbMetric.name, String(calculationSummary.dbMetric.hoursPerFP.avg), String(calculationSummary.dbMetric.slocPerFP), '15%', String(Math.round(calculationSummary.totalHours * 0.15))],
+      [csv.totalIntegrated, csv.fullStackLabel, String(calculationSummary.blendedHoursPerFP), '-', '100%', String(calculationSummary.totalHours)]
     ];
 
     return BOM + rows.map(r => r.map(sanitize).join(sep)).join('\r\n');
-  }, [calculationSummary, counts, complexityLevel, vafFactor, teamSize, sprintWeeks]);
+  }, [fpUi, calculationSummary, counts, complexityLevel, vafFactor, teamSize, sprintWeeks]);
 
-  // Data URI inline para download instantâneo detectável por inspeção de DOM
   const csvDataUri = useMemo(() => {
     return 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
   }, [csvContent]);
 
-  // Blob URL persistente para browsers e automações
   const [blobUrl, setBlobUrl] = useState<string>('');
 
   useEffect(() => {
@@ -233,7 +231,7 @@ export const FunctionPointsView: React.FC = () => {
       url = URL.createObjectURL(blob);
       setBlobUrl(url);
     } catch {
-      // Fallback para csvDataUri
+      // Fallback
     }
 
     return () => {
@@ -243,9 +241,16 @@ export const FunctionPointsView: React.FC = () => {
     };
   }, [csvContent]);
 
-  // URL ativa disponível imediatamente (Blob com fallback para Data URI)
+  if (!tools || !fpUi) {
+    return (
+      <div className="py-20 text-center text-sm text-slate-400 animate-pulse">
+        {t.common.loadingTranslation}
+      </div>
+    );
+  }
+
   const downloadUrl = blobUrl || csvDataUri;
-  const fileName = 'estimativa_pontos_de_funcao.csv';
+  const fileName = fpUi.csvFilename;
 
   const handleDownloadSpreadsheet = () => {
     setDownloadSuccess(true);
@@ -264,36 +269,26 @@ export const FunctionPointsView: React.FC = () => {
         <div className="relative z-10 max-w-4xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-800/60">
             <Calculator size={14} />
-            Métricas de Engenharia de Software • APF / IFPUG
+            {fpUi.badge}
           </div>
 
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
-            Análise de Pontos de Função (APF) & Dimensionamento de Software
+            {fpUi.title}
           </h1>
 
           <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-            Medição do tamanho funcional de software de acordo com os padrões internacionais{' '}
-            <strong className="text-white">IFPUG (ISO/IEC 20926)</strong> e{' '}
-            <strong className="text-white">NESMA</strong>. Descubra como cada elemento transacional e de dados
-            se correlaciona com as tecnologias analisadas neste portal (
-            <span className="text-cyan-400 font-medium">FastAPI</span>,{' '}
-            <span className="text-purple-400 font-medium">.NET 8</span>,{' '}
-            <span className="text-emerald-400 font-medium">Spring Boot 3</span>,{' '}
-            <span className="text-blue-400 font-medium">React</span>,{' '}
-            <span className="text-emerald-300 font-medium">Vue</span>,{' '}
-            <span className="text-rose-400 font-medium">Angular</span> e Bancos de Dados) em termos de{' '}
-            <span className="text-white font-semibold">Horas por Ponto de Função (h/PF)</span>, linhas de código equivalentes e custos de sustentação.
+            {fpUi.subtitle}
           </p>
 
           <div className="flex flex-wrap gap-2 pt-2 text-xs font-mono text-slate-400">
             <span className="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/60">
-              Norma: ISO/IEC 20926:2009
+              {fpUi.normIso}
             </span>
             <span className="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/60">
-              Taxa de Entrega: ISBSG Benchmarks
+              {fpUi.normIsbsg}
             </span>
             <span className="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/60">
-              Independência Tecnológica Funcional
+              {fpUi.normNeutral}
             </span>
           </div>
         </div>
@@ -305,14 +300,13 @@ export const FunctionPointsView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-cyan-400 font-bold">
               <Layers size={14} />
-              Fundamentos Normativos
+              {fpUi.matrixKicker}
             </div>
             <h2 className="text-2xl font-bold text-white mt-1">
-              Matriz Canônica de Complexidade e Pesos (IFPUG CPM 4.3.1)
+              {fpUi.referenceTableTitle}
             </h2>
             <p className="text-sm text-slate-400 mt-1 max-w-3xl">
-              A Análise de Pontos de Função classifica os requisitos do usuário em 5 componentes fundamentais,
-              divididos em Funções de Dados (o que o sistema armazena) e Funções de Transação (o que o sistema processa).
+              {fpUi.referenceTableSubtitle}
             </p>
           </div>
 
@@ -323,10 +317,10 @@ export const FunctionPointsView: React.FC = () => {
             data-href={downloadUrl}
             onClick={handleDownloadSpreadsheet}
             className="px-3.5 py-2 text-xs font-semibold text-cyan-300 hover:text-white rounded-xl border border-cyan-800/60 hover:border-cyan-600 bg-cyan-950/40 hover:bg-cyan-900/60 transition-colors flex items-center gap-1.5 self-start md:self-auto cursor-pointer shadow-sm shrink-0"
-            title="Exportar planilha de pontos de função"
+            title={fpUi.matrixExportTitle}
           >
             <FileSpreadsheet size={14} className="text-cyan-400 shrink-0" />
-            <span>Exportar Matriz APF (.csv)</span>
+            <span>{fpUi.matrixExportBtn}</span>
           </a>
         </div>
 
@@ -335,16 +329,16 @@ export const FunctionPointsView: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-950/80 border-b border-slate-800 text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                <th className="py-3.5 px-4">Sigla</th>
-                <th className="py-3.5 px-4">Elemento Funcional</th>
-                <th className="py-3.5 px-3 text-center bg-emerald-950/30 text-emerald-300">Baixa</th>
-                <th className="py-3.5 px-3 text-center bg-amber-950/30 text-amber-300">Média</th>
-                <th className="py-3.5 px-3 text-center bg-rose-950/30 text-rose-300">Alta</th>
-                <th className="py-3.5 px-4">Mapeamento em Arquitetura Moderna</th>
+                <th className="py-3.5 px-4">{fpUi.colAbbr}</th>
+                <th className="py-3.5 px-4">{fpUi.colElement}</th>
+                <th className="py-3.5 px-3 text-center bg-emerald-950/30 text-emerald-300">{fpUi.lowLabel}</th>
+                <th className="py-3.5 px-3 text-center bg-amber-950/30 text-amber-300">{fpUi.medLabel}</th>
+                <th className="py-3.5 px-3 text-center bg-rose-950/30 text-rose-300">{fpUi.highLabel}</th>
+                <th className="py-3.5 px-4">{fpUi.colMapping}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-sm">
-              {FP_ELEMENT_WEIGHTS.map(elem => (
+              {fpWeights.map(elem => (
                 <tr key={elem.type} className="hover:bg-slate-800/40 transition-colors">
                   <td className="py-4 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">
                     {elem.type}
@@ -354,13 +348,13 @@ export const FunctionPointsView: React.FC = () => {
                     <div className="text-xs text-slate-400 mt-0.5">{elem.description}</div>
                   </td>
                   <td className="py-4 px-3 text-center font-mono font-semibold text-emerald-400 bg-emerald-950/10">
-                    {elem.low} PF
+                    {elem.low} {fpUi.pfUnit}
                   </td>
                   <td className="py-4 px-3 text-center font-mono font-semibold text-amber-400 bg-amber-950/10">
-                    {elem.medium} PF
+                    {elem.medium} {fpUi.pfUnit}
                   </td>
                   <td className="py-4 px-3 text-center font-mono font-semibold text-rose-400 bg-rose-950/10">
-                    {elem.high} PF
+                    {elem.high} {fpUi.pfUnit}
                   </td>
                   <td className="py-4 px-4 text-xs text-slate-300 leading-relaxed max-w-md">
                     {elem.mapping}
@@ -378,13 +372,13 @@ export const FunctionPointsView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-indigo-400 font-bold">
               <BarChart3 size={14} />
-              Produtividade e Benchmark
+              {fpUi.benchmarkKicker}
             </div>
             <h2 className="text-2xl font-bold text-white mt-1">
-              Taxa de Entrega por Tecnologia (Horas / PF & SLOC Equivalente)
+              {fpUi.techBenchmarkTitle}
             </h2>
             <p className="text-sm text-slate-400 mt-1 max-w-3xl">
-              Embora o Ponto de Função seja neutro em relação à linguagem, o esforço real de engenharia para implementar 1 PF varia expressivamente conforme o ecossistema, nível de abstração, tipagem estática e maturidade de bibliotecas.
+              {fpUi.techBenchmarkSubtitle}
             </p>
           </div>
 
@@ -397,69 +391,69 @@ export const FunctionPointsView: React.FC = () => {
               data-href={downloadUrl}
               onClick={handleDownloadSpreadsheet}
               className="px-3 py-1.5 rounded-lg border border-cyan-800/60 hover:border-cyan-600 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-              title="Baixar planilha com métricas de produtividade"
+              title={fpUi.benchmarkDownloadTitle}
             >
               <Download size={13} className="text-cyan-400 shrink-0" />
-              <span>Baixar Métricas APF (.csv)</span>
+              <span>{fpUi.benchmarkDownloadBtn}</span>
             </a>
 
             <div className="flex items-center gap-1.5 p-1 rounded-lg bg-slate-900 border border-slate-800 text-xs">
               <button
                 onClick={() => setActiveCategoryFilter('all')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-                activeCategoryFilter === 'all'
-                  ? 'bg-cyan-500 text-slate-950 font-bold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Todas ({TECH_FP_METRICS.length})
-            </button>
-            <button
-              onClick={() => setActiveCategoryFilter('backend')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-                activeCategoryFilter === 'backend'
-                  ? 'bg-cyan-500 text-slate-950 font-bold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Backend
-            </button>
-            <button
-              onClick={() => setActiveCategoryFilter('frontend')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-                activeCategoryFilter === 'frontend'
-                  ? 'bg-cyan-500 text-slate-950 font-bold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Frontend
-            </button>
-            <button
-              onClick={() => setActiveCategoryFilter('database')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-                activeCategoryFilter === 'database'
-                  ? 'bg-cyan-500 text-slate-950 font-bold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Bancos de Dados
-            </button>
+                className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
+                  activeCategoryFilter === 'all'
+                    ? 'bg-cyan-500 text-slate-950 font-bold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {fpUi.filterAll} ({fpMetrics.length})
+              </button>
+              <button
+                onClick={() => setActiveCategoryFilter('backend')}
+                className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
+                  activeCategoryFilter === 'backend'
+                    ? 'bg-cyan-500 text-slate-950 font-bold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {fpUi.filterBackend}
+              </button>
+              <button
+                onClick={() => setActiveCategoryFilter('frontend')}
+                className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
+                  activeCategoryFilter === 'frontend'
+                    ? 'bg-cyan-500 text-slate-950 font-bold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {fpUi.filterFrontend}
+              </button>
+              <button
+                onClick={() => setActiveCategoryFilter('database')}
+                className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
+                  activeCategoryFilter === 'database'
+                    ? 'bg-cyan-500 text-slate-950 font-bold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {fpUi.filterDatabase}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
         {/* Tabela de Produtividade */}
         <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/60 shadow-lg">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-950/80 border-b border-slate-800 text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                <th className="py-3.5 px-4">Tecnologia & Versão</th>
-                <th className="py-3.5 px-4 text-center">Taxa Média (h / PF)</th>
-                <th className="py-3.5 px-3 text-center">Faixa Típica</th>
-                <th className="py-3.5 px-4 text-center">SLOC / PF</th>
-                <th className="py-3.5 px-4 text-center">Sustentação (h/PF/ano)</th>
-                <th className="py-3.5 px-4 text-center">Bugs / 1.000 PF</th>
-                <th className="py-3.5 px-4">Alavancas de Produtividade & Recomendações</th>
+                <th className="py-3.5 px-4">{fpUi.colTechVersion}</th>
+                <th className="py-3.5 px-4 text-center">{fpUi.colAvgRate}</th>
+                <th className="py-3.5 px-3 text-center">{fpUi.colTypicalRange}</th>
+                <th className="py-3.5 px-4 text-center">{fpUi.colSlocPerFp}</th>
+                <th className="py-3.5 px-4 text-center">{fpUi.colMaintYear}</th>
+                <th className="py-3.5 px-4 text-center">{fpUi.colBugsPer1000}</th>
+                <th className="py-3.5 px-4">{fpUi.colFactors}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-sm">
@@ -473,33 +467,28 @@ export const FunctionPointsView: React.FC = () => {
                       <span>{item.name}</span>
                     </div>
                     <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono mt-1 inline-block">
-                      {item.category}
+                      {fpUi.catLabels[item.category]}
                     </span>
                   </td>
 
-                  {/* Horas Médias por PF */}
                   <td className="py-4 px-4 text-center">
                     <span className="font-mono text-base font-bold text-cyan-400">
-                      {item.hoursPerFP.avg} h
+                      {item.hoursPerFP.avg} {fpUi.hoursShortUnit}
                     </span>
                   </td>
 
-                  {/* Faixa Min - Max */}
                   <td className="py-4 px-3 text-center font-mono text-xs text-slate-400 whitespace-nowrap">
-                    {item.hoursPerFP.min}h – {item.hoursPerFP.max}h
+                    {item.hoursPerFP.min}{fpUi.hoursShortUnit} – {item.hoursPerFP.max}{fpUi.hoursShortUnit}
                   </td>
 
-                  {/* SLOC por PF */}
                   <td className="py-4 px-4 text-center font-mono text-xs text-slate-300 font-medium">
-                    {item.slocPerFP} linhas
+                    {item.slocPerFP} {fpUi.slocLinesUnit}
                   </td>
 
-                  {/* Custo Anual de Manutenção */}
                   <td className="py-4 px-4 text-center font-mono text-xs text-slate-400">
-                    {item.maintenanceHoursPerYear} h/ano
+                    {item.maintenanceHoursPerYear} {fpUi.maintUnit}
                   </td>
 
-                  {/* Densidade de Defeitos */}
                   <td className="py-4 px-4 text-center">
                     <span
                       className={`font-mono text-xs font-bold px-2 py-0.5 rounded ${
@@ -514,7 +503,6 @@ export const FunctionPointsView: React.FC = () => {
                     </span>
                   </td>
 
-                  {/* Fatores e Use Case */}
                   <td className="py-4 px-4 text-xs text-slate-300 space-y-1 max-w-md">
                     <div className="text-slate-400">{item.recommendedUseCase}</div>
                     <ul className="list-disc list-inside text-[11px] text-slate-500 space-y-0.5">
@@ -536,13 +524,13 @@ export const FunctionPointsView: React.FC = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-cyan-400 font-bold">
               <Calculator size={16} />
-              Simulador Interativo
+              {fpUi.calculatorKicker}
             </div>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
-              Calculadora de Pontos de Função & Dimensionamento de Sprint
+              {fpUi.calcSectionTitle}
             </h2>
             <p className="text-sm text-slate-400 max-w-2xl">
-              Informe a quantidade de funções do seu projeto, selecione a stack pretendida e dimensione o esforço em horas, sprints e tamanho de equipe.
+              {fpUi.calcSectionSubtitle}
             </p>
           </div>
 
@@ -568,7 +556,7 @@ export const FunctionPointsView: React.FC = () => {
             }
             className="px-3 py-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 rounded-lg border border-cyan-800/50 hover:border-cyan-700 bg-cyan-950/40 transition-colors self-start md:self-auto cursor-pointer"
           >
-            Carregar Exemplo Padrão
+            {fpUi.calculatorLoadExampleBtn}
           </button>
 
           <a
@@ -578,10 +566,10 @@ export const FunctionPointsView: React.FC = () => {
             data-href={downloadUrl}
             onClick={handleDownloadSpreadsheet}
             className="px-3.5 py-1.5 text-xs font-semibold text-white rounded-lg border border-emerald-500/50 hover:border-emerald-400 bg-emerald-950/70 hover:bg-emerald-900/80 transition-colors flex items-center gap-1.5 self-start md:self-auto cursor-pointer shadow-sm"
-            title="Exportar planilha formatada para Excel / Google Planilhas"
+            title={fpUi.calculatorDownloadSheetTitle}
           >
             <FileSpreadsheet size={14} className="text-emerald-400" />
-            <span>Baixar Planilha (.csv / Excel)</span>
+            <span>{fpUi.calculatorDownloadSheetBtn}</span>
           </a>
         </div>
 
@@ -590,253 +578,140 @@ export const FunctionPointsView: React.FC = () => {
           <div className="lg:col-span-7 space-y-6">
             <h3 className="text-base font-semibold text-white flex items-center gap-2">
               <Layers size={16} className="text-cyan-400" />
-              1. Contagem de Funções de Dados e Transações
+              {fpUi.calculatorStep1Title}
             </h3>
 
             <div className="space-y-4">
-              {/* ALIs */}
-              <div className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-sm text-white flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-cyan-950 text-cyan-400 border border-cyan-800/50">ALI</span>
-                    Arquivos Lógicos Internos (Tabelas / Coleções)
-                  </span>
-                  <span className="text-xs font-mono text-cyan-400 font-semibold">
-                    {calculationSummary.ali} PF
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Baixa (7 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('aliLow', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.aliLow}</span>
-                      <button onClick={() => updateCount('aliLow', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
+              {(
+                [
+                  {
+                    type: 'ALI' as const,
+                    badgeClass: 'bg-cyan-950 text-cyan-400 border-cyan-800/50',
+                    totalClass: 'text-cyan-400',
+                    total: calculationSummary.ali,
+                    lowKey: 'aliLow' as const,
+                    medKey: 'aliMed' as const,
+                    highKey: 'aliHigh' as const,
+                  },
+                  {
+                    type: 'AIE' as const,
+                    badgeClass: 'bg-indigo-950 text-indigo-400 border-indigo-800/50',
+                    totalClass: 'text-indigo-400',
+                    total: calculationSummary.aie,
+                    lowKey: 'aieLow' as const,
+                    medKey: 'aieMed' as const,
+                    highKey: 'aieHigh' as const,
+                  },
+                  {
+                    type: 'EE' as const,
+                    badgeClass: 'bg-amber-950 text-amber-400 border-amber-800/50',
+                    totalClass: 'text-amber-400',
+                    total: calculationSummary.ee,
+                    lowKey: 'eeLow' as const,
+                    medKey: 'eeMed' as const,
+                    highKey: 'eeHigh' as const,
+                  },
+                  {
+                    type: 'SE' as const,
+                    badgeClass: 'bg-rose-950 text-rose-400 border-rose-800/50',
+                    totalClass: 'text-rose-400',
+                    total: calculationSummary.se,
+                    lowKey: 'seLow' as const,
+                    medKey: 'seMed' as const,
+                    highKey: 'seHigh' as const,
+                  },
+                  {
+                    type: 'CE' as const,
+                    badgeClass: 'bg-emerald-950 text-emerald-400 border-emerald-800/50',
+                    totalClass: 'text-emerald-400',
+                    total: calculationSummary.ce,
+                    lowKey: 'ceLow' as const,
+                    medKey: 'ceMed' as const,
+                    highKey: 'ceHigh' as const,
+                  },
+                ]
+              ).map((group) => {
+                const elMeta = fpUi.elements[group.type];
+                return (
+                  <div key={group.type} className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm text-white flex items-center gap-1.5">
+                        <span className={`px-2 py-0.5 rounded text-xs font-mono font-bold border ${group.badgeClass}`}>
+                          {group.type}
+                        </span>
+                        {elMeta.label}
+                      </span>
+                      <span className={`text-xs font-mono font-semibold ${group.totalClass}`}>
+                        {group.total} {fpUi.pfUnit}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(
+                        [
+                          { label: elMeta.low, key: group.lowKey },
+                          { label: elMeta.med, key: group.medKey },
+                          { label: elMeta.high, key: group.highKey },
+                        ]
+                      ).map((tier) => (
+                        <div key={tier.key} className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
+                          <span className="text-xs text-slate-400">{tier.label}</span>
+                          <div className="flex items-center gap-1.5">
+                            <button onClick={() => updateCount(tier.key, -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
+                            <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts[tier.key]}</span>
+                            <button onClick={() => updateCount(tier.key, 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Média (10 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('aliMed', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.aliMed}</span>
-                      <button onClick={() => updateCount('aliMed', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Alta (15 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('aliHigh', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.aliHigh}</span>
-                      <button onClick={() => updateCount('aliHigh', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* AIEs */}
-              <div className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-sm text-white flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-indigo-950 text-indigo-400 border border-indigo-800/50">AIE</span>
-                    Arquivos de Interface Externa (APIs Externas)
-                  </span>
-                  <span className="text-xs font-mono text-indigo-400 font-semibold">
-                    {calculationSummary.aie} PF
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Baixa (5 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('aieLow', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.aieLow}</span>
-                      <button onClick={() => updateCount('aieLow', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Média (7 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('aieMed', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.aieMed}</span>
-                      <button onClick={() => updateCount('aieMed', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Alta (10 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('aieHigh', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.aieHigh}</span>
-                      <button onClick={() => updateCount('aieHigh', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* EEs */}
-              <div className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-sm text-white flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-950 text-amber-400 border border-amber-800/50">EE</span>
-                    Entradas Externas (POST, PUT, DELETE, Gravações)
-                  </span>
-                  <span className="text-xs font-mono text-amber-400 font-semibold">
-                    {calculationSummary.ee} PF
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Baixa (3 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('eeLow', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.eeLow}</span>
-                      <button onClick={() => updateCount('eeLow', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Média (4 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('eeMed', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.eeMed}</span>
-                      <button onClick={() => updateCount('eeMed', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Alta (6 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('eeHigh', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.eeHigh}</span>
-                      <button onClick={() => updateCount('eeHigh', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* SEs */}
-              <div className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-sm text-white flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-rose-950 text-rose-400 border border-rose-800/50">SE</span>
-                    Saídas Externas (Relatórios, Cálculos, Webhooks)
-                  </span>
-                  <span className="text-xs font-mono text-rose-400 font-semibold">
-                    {calculationSummary.se} PF
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Baixa (4 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('seLow', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.seLow}</span>
-                      <button onClick={() => updateCount('seLow', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Média (5 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('seMed', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.seMed}</span>
-                      <button onClick={() => updateCount('seMed', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Alta (7 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('seHigh', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.seHigh}</span>
-                      <button onClick={() => updateCount('seHigh', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* CEs */}
-              <div className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-sm text-white flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/50">CE</span>
-                    Consultas Externas (GETs simples, buscas paginadas)
-                  </span>
-                  <span className="text-xs font-mono text-emerald-400 font-semibold">
-                    {calculationSummary.ce} PF
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Baixa (3 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('ceLow', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.ceLow}</span>
-                      <button onClick={() => updateCount('ceLow', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Média (4 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('ceMed', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.ceMed}</span>
-                      <button onClick={() => updateCount('ceMed', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/80">
-                    <span className="text-xs text-slate-400">Alta (6 PF)</span>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateCount('ceHigh', -1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">-</button>
-                      <span className="w-5 text-center font-mono text-xs font-bold text-white">{counts.ceHigh}</span>
-                      <button onClick={() => updateCount('ceHigh', 1)} className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
 
             {/* Seleção de Stack e Parâmetros */}
             <div className="space-y-4 pt-4 border-t border-slate-800">
               <h3 className="text-base font-semibold text-white flex items-center gap-2">
                 <Cpu size={16} className="text-indigo-400" />
-                2. Parâmetros Tecnológicos e da Equipe
+                {fpUi.calculatorStep2Title}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Backend */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Linguagem Backend</label>
+                  <label className="text-xs font-semibold text-slate-300">{fpUi.backendLabel}</label>
                   <select
                     value={selectedBackend}
                     onChange={e => setSelectedBackend(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                   >
-                    <option value="dotnet">.NET 8 Minimal APIs (C# 12)</option>
-                    <option value="fastapi">FastAPI (Python 3.12)</option>
-                    <option value="spring">Spring Boot 3 (Java 21)</option>
+                    {fpUi.backendOptions.map(opt => (
+                      <option key={opt.id} value={opt.id}>{opt.label}</option>
+                    ))}
                   </select>
                 </div>
 
-                {/* Frontend */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Framework Frontend</label>
+                  <label className="text-xs font-semibold text-slate-300">{fpUi.frontendLabel}</label>
                   <select
                     value={selectedFrontend}
                     onChange={e => setSelectedFrontend(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                   >
-                    <option value="react">React 18 / 19 (TypeScript)</option>
-                    <option value="vue">Vue 3.4 (Composition API)</option>
-                    <option value="angular">Angular 17+ (Signals)</option>
+                    {fpUi.frontendOptions.map(opt => (
+                      <option key={opt.id} value={opt.id}>{opt.label}</option>
+                    ))}
                   </select>
                 </div>
 
-                {/* Database */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Repositório de Dados</label>
+                  <label className="text-xs font-semibold text-slate-300">{fpUi.databaseLabel}</label>
                   <select
                     value={selectedDb}
                     onChange={e => setSelectedDb(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                   >
-                    <option value="postgresql">PostgreSQL 16 (Relacional + JSONB)</option>
-                    <option value="mongodb">MongoDB 7 (Documentos)</option>
-                    <option value="redis">Redis 7 (In-Memory)</option>
+                    {fpUi.dbOptions.map(opt => (
+                      <option key={opt.id} value={opt.id}>{opt.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -844,21 +719,20 @@ export const FunctionPointsView: React.FC = () => {
               {/* Complexidade e Equipe */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Complexidade / Fator VAF</label>
+                  <label className="text-xs font-semibold text-slate-300">{fpUi.complexityLabel}</label>
                   <select
                     value={complexityLevel}
                     onChange={e => setComplexityLevel(e.target.value as any)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                   >
-                    <option value="low">Baixa (VAF 0.85 - CRUD simples)</option>
-                    <option value="standard">Média (VAF 1.00 - Padrão corporativo)</option>
-                    <option value="high">Alta (VAF 1.15 - Concorrência e mTLS)</option>
-                    <option value="critical">Crítica (VAF 1.30 - Bancário / 24x7 / SLA)</option>
+                    {fpUi.complexityOptions.map(opt => (
+                      <option key={opt.id} value={opt.id}>{opt.label}</option>
+                    ))}
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Tamanho do Time Devs</label>
+                  <label className="text-xs font-semibold text-slate-300">{fpUi.teamSizeLabel}</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="range"
@@ -868,22 +742,22 @@ export const FunctionPointsView: React.FC = () => {
                       onChange={e => setTeamSize(Number(e.target.value))}
                       className="flex-1 accent-cyan-400"
                     />
-                    <span className="font-mono text-xs font-bold text-white w-12 text-right">
-                      {teamSize} dev{teamSize > 1 ? 's' : ''}
+                    <span className="font-mono text-xs font-bold text-white w-14 text-right">
+                      {teamSize} {fpUi.devsShortUnit}
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Duração da Sprint</label>
+                  <label className="text-xs font-semibold text-slate-300">{fpUi.sprintLenLabel}</label>
                   <select
                     value={sprintWeeks}
                     onChange={e => setSprintWeeks(Number(e.target.value))}
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                   >
-                    <option value={1}>1 Semana (Ciclos ultra-ágeis)</option>
-                    <option value={2}>2 Semanas (Scrum padrão de mercado)</option>
-                    <option value={4}>4 Semanas (Ciclos mensais)</option>
+                    {fpUi.sprintOptions.map(opt => (
+                      <option key={opt.id} value={Number(opt.id)}>{opt.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -895,10 +769,10 @@ export const FunctionPointsView: React.FC = () => {
             <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-6 space-y-6 shadow-xl sticky top-24">
               <div className="border-b border-slate-800 pb-4">
                 <span className="text-[11px] uppercase tracking-wider text-cyan-400 font-mono font-bold">
-                  Resumo do Dimensionamento
+                  {fpUi.summaryKicker}
                 </span>
                 <div className="flex items-baseline justify-between mt-1">
-                  <span className="text-sm font-semibold text-white">Tamanho Funcional:</span>
+                  <span className="text-sm font-semibold text-white">{fpUi.functionalSizeLabel}</span>
                   <div className="text-right">
                     <span className="text-3xl font-extrabold text-cyan-400 font-mono">
                       {calculationSummary.pfa}
@@ -907,11 +781,11 @@ export const FunctionPointsView: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-xs text-slate-400 mt-1">
-                  <span>Pontos Brutos (PFNA):</span>
-                  <span className="font-mono text-slate-300 font-semibold">{calculationSummary.pfna} PF</span>
+                  <span>{fpUi.rawFpLabel}</span>
+                  <span className="font-mono text-slate-300 font-semibold">{calculationSummary.pfna} {fpUi.pfUnit}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-slate-400 mt-0.5">
-                  <span>Fator de Ajuste (VAF):</span>
+                  <span>{fpUi.vafLabel}:</span>
                   <span className="font-mono text-slate-300 font-semibold">{vafFactor.toFixed(2)}x</span>
                 </div>
               </div>
@@ -921,85 +795,85 @@ export const FunctionPointsView: React.FC = () => {
                 <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800/80 space-y-1">
                   <div className="flex items-center gap-1.5 text-xs text-slate-400">
                     <Clock size={14} className="text-cyan-400" />
-                    <span>Esforço Total</span>
+                    <span>{fpUi.totalEffortTitle}</span>
                   </div>
                   <div className="text-xl font-extrabold text-white font-mono">
-                    {calculationSummary.totalHours} <span className="text-xs font-normal text-slate-400">horas</span>
+                    {calculationSummary.totalHours} <span className="text-xs font-normal text-slate-400">{fpUi.hoursUnit}</span>
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
-                    Média: {calculationSummary.blendedHoursPerFP} h / PF
+                    {fpUi.avgPrefix} {calculationSummary.blendedHoursPerFP} h / {fpUi.pfUnit}
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800/80 space-y-1">
                   <div className="flex items-center gap-1.5 text-xs text-slate-400">
                     <Calendar size={14} className="text-indigo-400" />
-                    <span>Prazo Estimado</span>
+                    <span>{fpUi.estTimelineTitle}</span>
                   </div>
                   <div className="text-xl font-extrabold text-white font-mono">
-                    {calculationSummary.estimatedSprints} <span className="text-xs font-normal text-slate-400">sprints</span>
+                    {calculationSummary.estimatedSprints} <span className="text-xs font-normal text-slate-400">{fpUi.sprintsUnit}</span>
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
-                    ~{calculationSummary.estimatedWeeks} semanas ({teamSize} devs)
+                    ~{calculationSummary.estimatedWeeks} {fpUi.weeksUnit} ({teamSize} {fpUi.devsShortUnit})
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800/80 space-y-1">
                   <div className="flex items-center gap-1.5 text-xs text-slate-400">
                     <Code size={14} className="text-emerald-400" />
-                    <span>Código Estimado</span>
+                    <span>{fpUi.estCodeTitle}</span>
                   </div>
                   <div className="text-xl font-extrabold text-white font-mono">
                     {calculationSummary.estimatedKsloc} <span className="text-xs font-normal text-slate-400">KSLOC</span>
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
-                    ~{Math.round(calculationSummary.estimatedKsloc * 1000)} linhas
+                    {fpUi.linesApproxPrefix}{Math.round(calculationSummary.estimatedKsloc * 1000)} {fpUi.linesApproxUnit}
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800/80 space-y-1">
                   <div className="flex items-center gap-1.5 text-xs text-slate-400">
                     <ShieldCheck size={14} className="text-amber-400" />
-                    <span>Defeitos Esperados</span>
+                    <span>{fpUi.expectedDefectsTitle}</span>
                   </div>
                   <div className="text-xl font-extrabold text-white font-mono">
-                    {calculationSummary.expectedDefects} <span className="text-xs font-normal text-slate-400">bugs</span>
+                    {calculationSummary.expectedDefects} <span className="text-xs font-normal text-slate-400">{fpUi.bugsUnit}</span>
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
-                    Em produção (~1 ano)
+                    {fpUi.prodYearNote}
                   </div>
                 </div>
               </div>
 
               {/* Detalhamento por Camada da Stack */}
               <div className="space-y-2 pt-2 border-t border-slate-800/80 text-xs">
-                <span className="font-semibold text-slate-300">Distribuição de Esforço por Camada:</span>
+                <span className="font-semibold text-slate-300">{fpUi.layerDistLabel}</span>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-slate-400">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-purple-400" />
-                      Backend ({calculationSummary.beMetric.name})
+                      {fpUi.backendLayerLabel} ({calculationSummary.beMetric.name})
                     </span>
                     <span className="font-mono text-slate-200">
-                      ~{Math.round(calculationSummary.totalHours * 0.5)}h (50%)
+                      ~{Math.round(calculationSummary.totalHours * 0.5)}{fpUi.hoursShortUnit} (50%)
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-slate-400">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                      Frontend ({calculationSummary.feMetric.name})
+                      {fpUi.frontendLayerLabel} ({calculationSummary.feMetric.name})
                     </span>
                     <span className="font-mono text-slate-200">
-                      ~{Math.round(calculationSummary.totalHours * 0.35)}h (35%)
+                      ~{Math.round(calculationSummary.totalHours * 0.35)}{fpUi.hoursShortUnit} (35%)
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-slate-400">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      Banco ({calculationSummary.dbMetric.name})
+                      {fpUi.dbLayerLabel} ({calculationSummary.dbMetric.name})
                     </span>
                     <span className="font-mono text-slate-200">
-                      ~{Math.round(calculationSummary.totalHours * 0.15)}h (15%)
+                      ~{Math.round(calculationSummary.totalHours * 0.15)}{fpUi.hoursShortUnit} (15%)
                     </span>
                   </div>
                 </div>
@@ -1007,9 +881,9 @@ export const FunctionPointsView: React.FC = () => {
 
               {/* Manutenção Anual Projetada */}
               <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-400 flex items-center justify-between">
-                <span>Esforço de Sustentação Anual:</span>
+                <span>{fpUi.annualMaintLabel}</span>
                 <span className="font-mono font-bold text-amber-400">
-                  ~{calculationSummary.annualMaintenanceHours} h/ano
+                  ~{calculationSummary.annualMaintenanceHours} {fpUi.perYearUnit}
                 </span>
               </div>
 
@@ -1022,21 +896,21 @@ export const FunctionPointsView: React.FC = () => {
                   data-href={downloadUrl}
                   onClick={handleDownloadSpreadsheet}
                   className="w-full py-3 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer group text-center"
-                  title="Baixar Planilha de Estimativa (.csv / Excel)"
+                  title={fpUi.spreadsheetBtnTitle}
                 >
                   <Download size={16} className="group-hover:-translate-y-0.5 transition-transform shrink-0" />
-                  <span>Baixar Planilha de Estimativa (.csv / Excel)</span>
+                  <span>{fpUi.spreadsheetBtnLabel}</span>
                 </a>
 
                 {downloadSuccess && (
                   <div className="p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2 animate-in fade-in duration-200">
                     <Check size={14} className="text-emerald-400 shrink-0" />
-                    <span>Planilha gerada com sucesso! Verifique seus downloads.</span>
+                    <span>{fpUi.downloadSuccessMsg}</span>
                   </div>
                 )}
 
                 <p className="text-[10px] text-slate-500 text-center">
-                  Compatível com Microsoft Excel, Google Planilhas e LibreOffice Calc. Codificado em UTF-8 com separador padrão.
+                  {fpUi.excelCompatNote}
                 </p>
               </div>
             </div>
@@ -1049,13 +923,13 @@ export const FunctionPointsView: React.FC = () => {
         <div className="border-b border-slate-800 pb-4">
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-emerald-400 font-bold">
             <CheckCircle2 size={14} />
-            Estudo de Caso Prático
+            {fpUi.caseStudyKicker}
           </div>
           <h2 className="text-2xl font-bold text-white mt-1">
-            Mapeamento Real: Plataforma Fintech de Pagamentos Instantâneos (PIX)
+            {fpUi.caseStudyTitle}
           </h2>
           <p className="text-sm text-slate-400 mt-1 max-w-3xl">
-            Exemplo prático de contagem de Pontos de Função em uma arquitetura moderna baseada nas tecnologias deste portal, com persistência transacional em PostgreSQL, catálogo polimórfico em MongoDB e sessões em cache Redis.
+            {fpUi.caseStudySubtitle}
           </p>
         </div>
 
@@ -1063,15 +937,15 @@ export const FunctionPointsView: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-950/80 border-b border-slate-800 text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                <th className="py-3 px-4">Tipo</th>
-                <th className="py-3 px-4">Componente de Negócio</th>
-                <th className="py-3 px-3 text-center">Complexidade</th>
-                <th className="py-3 px-3 text-center">Pontos</th>
-                <th className="py-3 px-4">Implementação Técnica na Stack</th>
+                <th className="py-3 px-4">{fpUi.colCaseType}</th>
+                <th className="py-3 px-4">{fpUi.colCaseItem}</th>
+                <th className="py-3 px-3 text-center">{fpUi.colCaseComplexity}</th>
+                <th className="py-3 px-3 text-center">{fpUi.colCaseFp}</th>
+                <th className="py-3 px-4">{fpUi.colCaseImpl}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-sm">
-              {FINTECH_CASE_STUDY.map((item, idx) => (
+              {fpCaseStudy.map((item, idx) => (
                 <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
                   <td className="py-3.5 px-4 font-mono font-bold text-xs whitespace-nowrap">
                     <span
@@ -1095,10 +969,10 @@ export const FunctionPointsView: React.FC = () => {
                     <div className="text-xs text-slate-400">{item.description}</div>
                   </td>
                   <td className="py-3.5 px-3 text-center text-xs font-medium text-slate-300">
-                    {item.complexity}
+                    {fpUi.complexityDisplay[item.complexity] ?? item.complexity}
                   </td>
                   <td className="py-3.5 px-3 text-center font-mono font-bold text-cyan-400">
-                    {item.points} PF
+                    {item.points} {fpUi.pfUnit}
                   </td>
                   <td className="py-3.5 px-4 text-xs text-slate-300 font-mono">
                     {item.techImplementation}
@@ -1109,15 +983,15 @@ export const FunctionPointsView: React.FC = () => {
             <tfoot>
               <tr className="bg-slate-950/90 font-semibold text-sm border-t-2 border-slate-700">
                 <td colSpan={3} className="py-4 px-4 text-white text-right">
-                  Total de Pontos de Função Não Ajustados (PFNA):
+                  {fpUi.caseStudyPfnaTotalLabel}
                 </td>
                 <td className="py-4 px-3 text-center font-mono text-cyan-400 text-base font-bold">
-                  {FINTECH_CASE_STUDY.reduce((acc, item) => acc + item.points, 0)} PF
+                  {fpCaseStudy.reduce((acc, item) => acc + item.points, 0)} {fpUi.pfUnit}
                 </td>
                 <td className="py-4 px-4 text-xs text-slate-400 font-mono">
-                  Com Fator de Ajuste VAF 1.15 (Sistemas de Alta Concorrência) ={' '}
+                  {fpUi.caseStudyVafPrefix}{' '}
                   <strong className="text-white">
-                    {Math.round(FINTECH_CASE_STUDY.reduce((acc, item) => acc + item.points, 0) * 1.15 * 10) / 10} PFA
+                    {Math.round(fpCaseStudy.reduce((acc, item) => acc + item.points, 0) * 1.15 * 10) / 10} PFA
                   </strong>
                 </td>
               </tr>
@@ -1132,24 +1006,24 @@ export const FunctionPointsView: React.FC = () => {
           <div>
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Info size={16} className="text-cyan-400" />
-              As 14 Características Gerais de Sistemas (GSC - General System Characteristics)
+              {fpUi.gscTitle}
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              Utilizadas na metodologia clássica IFPUG para calcular o Grau de Influência (DI) e o Fator de Ajuste de Valor: VAF = 0.65 + (0.01 × TDI).
+              {fpUi.gscFormulaDesc}
             </p>
           </div>
           <button
             onClick={() => setShowGSCList(!showGSCList)}
             className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1"
           >
-            {showGSCList ? 'Ocultar Lista' : 'Exibir Todas as 14 GSC'}
+            {showGSCList ? fpUi.gscToggleHide : fpUi.gscToggleShow}
             <ChevronRight size={14} className={`transition-transform ${showGSCList ? 'rotate-90' : ''}`} />
           </button>
         </div>
 
         {showGSCList && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-slate-800 text-xs">
-            {GENERAL_SYSTEM_CHARACTERISTICS.map(gsc => (
+            {fpGscList.map(gsc => (
               <div key={gsc.id} className="p-3 rounded-lg bg-slate-950 border border-slate-800/80 space-y-1">
                 <div className="font-semibold text-white flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-cyan-950 text-cyan-400 font-mono text-[10px] flex items-center justify-center font-bold">

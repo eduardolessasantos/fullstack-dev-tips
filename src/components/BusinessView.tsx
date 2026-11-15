@@ -37,14 +37,9 @@ import {
   BusinessAssessmentInput,
   LeadCaptureData
 } from '../types.ts';
-import {
-  ECONOMIC_SECTORS,
-  COMPANY_SIZES,
-  MATURITY_LEVELS,
-  PROJECT_GOALS,
-  calculateBusinessAssessment
-} from '../data/businessData.ts';
+import { calculateBusinessAssessment } from '../data/businessData.ts';
 import { generateBusinessPdf } from '../utils/businessPdfGenerator.ts';
+import { useLanguage, useTranslationNamespace } from '../i18n/LanguageContext.tsx';
 
 const SECTOR_ICONS: Record<EconomicSectorId, React.ElementType> = {
   retail: ShoppingBag,
@@ -57,6 +52,9 @@ const SECTOR_ICONS: Record<EconomicSectorId, React.ElementType> = {
 };
 
 export const BusinessView: React.FC = () => {
+  const { t } = useLanguage();
+  const { data: businessNs } = useTranslationNamespace('business');
+
   // Estados do Formulário Interativo
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [sectorId, setSectorId] = useState<EconomicSectorId>('retail');
@@ -79,27 +77,38 @@ export const BusinessView: React.FC = () => {
   });
   const [downloadNotice, setDownloadNotice] = useState<string | null>(null);
 
+  const selectedSector = businessNs?.sectors[sectorId];
+
   // Input consolidado
   const currentInput: BusinessAssessmentInput = useMemo(() => ({
     sectorId,
-    specificNiche: specificNiche.trim() || ECONOMIC_SECTORS[sectorId].typicalNiches[0],
+    specificNiche: specificNiche.trim() || businessNs?.sectors[sectorId]?.typicalNiches[0] || '',
     companySize,
     maturityLevel,
     primaryGoal,
     customRequirements: customRequirements.trim()
-  }), [sectorId, specificNiche, companySize, maturityLevel, primaryGoal, customRequirements]);
+  }), [businessNs, sectorId, specificNiche, companySize, maturityLevel, primaryGoal, customRequirements]);
 
   // Resultado do Cálculo
   const assessment = useMemo(() => {
-    return calculateBusinessAssessment(currentInput);
-  }, [currentInput]);
+    if (!businessNs) return null;
+    return calculateBusinessAssessment(currentInput, businessNs);
+  }, [businessNs, currentInput]);
 
-  const selectedSector = ECONOMIC_SECTORS[sectorId];
+  if (!businessNs || !selectedSector || !assessment) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-sm text-slate-400">
+        {t.common.loadingTranslation}
+      </div>
+    );
+  }
+
+  const { ui, pdf, sectors, companySizes, maturityLevels, projectGoals } = businessNs;
 
   // Disparo do Download do Preview Gratuito
   const handleDownloadPreview = () => {
-    generateBusinessPdf(assessment, 'preview');
-    setDownloadNotice('PDF Preview gerado com sucesso! Verifique seus downloads.');
+    generateBusinessPdf(assessment, 'preview', undefined, businessNs);
+    setDownloadNotice(ui.previewSuccessNotice);
     setTimeout(() => setDownloadNotice(null), 5000);
   };
 
@@ -134,22 +143,22 @@ export const BusinessView: React.FC = () => {
           Accept: 'application/json'
         },
         body: JSON.stringify({
-          tipo: 'Lead B2B - Diagnóstico Business',
+          tipo: ui.formspreeLeadType,
           nome: leadData.name.trim(),
           email: leadData.email.trim(),
-          telefone_whatsapp: leadData.phone.trim() || 'Não informado',
-          empresa: leadData.companyName.trim() || 'Não informado',
-          deseja_consultoria: leadData.wantsConsultation ? 'Sim, solicitar contato técnico' : 'Apenas relatório',
+          telefone_whatsapp: leadData.phone.trim() || ui.formspreeNotProvided,
+          empresa: leadData.companyName.trim() || ui.formspreeNotProvided,
+          deseja_consultoria: leadData.wantsConsultation ? ui.formspreeConsultYes : ui.formspreeConsultNo,
           setor_economico: selectedSector.name,
           nicho_especifico: currentInput.specificNiche,
-          porte_empresa: COMPANY_SIZES[companySize].label,
-          maturidade_atual: MATURITY_LEVELS[maturityLevel].label,
-          objetivo_projeto: PROJECT_GOALS[primaryGoal].label,
-          estimativa_capex: `R$ ${assessment.capexMin.toLocaleString('pt-BR')} a R$ ${assessment.capexMax.toLocaleString('pt-BR')}`,
-          estimativa_opex_mensal: `R$ ${assessment.opexMonthlyMin.toLocaleString('pt-BR')} a R$ ${assessment.opexMonthlyMax.toLocaleString('pt-BR')}`,
-          prazo_semanas: `${assessment.timelineWeeksMin} a ${assessment.timelineWeeksMax} semanas (${assessment.sprintsCount} sprints)`,
-          requisitos_adicionais: currentInput.customRequirements || 'Nenhum informado',
-          _subject: `[Novo Lead B2B] ${leadData.name.trim()} - ${leadData.companyName.trim() || selectedSector.name}`
+          porte_empresa: companySizes[companySize].label,
+          maturidade_atual: maturityLevels[maturityLevel].label,
+          objetivo_projeto: projectGoals[primaryGoal].label,
+          estimativa_capex: `R$ ${assessment.capexMin.toLocaleString(pdf.currencyLocale)} ${ui.rangeJoin} R$ ${assessment.capexMax.toLocaleString(pdf.currencyLocale)}`,
+          estimativa_opex_mensal: `R$ ${assessment.opexMonthlyMin.toLocaleString(pdf.currencyLocale)} ${ui.rangeJoin} R$ ${assessment.opexMonthlyMax.toLocaleString(pdf.currencyLocale)}`,
+          prazo_semanas: `${assessment.timelineWeeksMin} ${ui.rangeJoin} ${assessment.timelineWeeksMax} ${ui.weeks} (${assessment.sprintsCount} sprints)`,
+          requisitos_adicionais: currentInput.customRequirements || ui.formspreeNoCustomReq,
+          _subject: `[Lead B2B] ${leadData.name.trim()} - ${leadData.companyName.trim() || selectedSector.name}`
         })
       });
     } catch {
@@ -158,9 +167,9 @@ export const BusinessView: React.FC = () => {
       setIsSubmittingLead(false);
     }
 
-    generateBusinessPdf(assessment, 'complete', leadData);
+    generateBusinessPdf(assessment, 'complete', leadData, businessNs);
     setIsLeadModalOpen(false);
-    setDownloadNotice('Dossiê Analítico Completo (6 páginas) gerado com sucesso! Seus dados foram recebidos pela nossa equipe.');
+    setDownloadNotice(ui.completeSuccessNotice);
     setTimeout(() => setDownloadNotice(null), 7000);
   };
 
@@ -170,28 +179,19 @@ export const BusinessView: React.FC = () => {
       <div className="space-y-4 text-center max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold">
           <Sparkles size={14} />
-          <span>PLANEJAMENTO ESTRATÉGICO DE TI & ORÇAMENTAÇÃO</span>
+          <span>{ui.badge}</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-extrabold text-slate-100 tracking-tight">
-          Diagnóstico de Digitalização &{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500">
-            Orçamento Empresarial
-          </span>
+          {ui.title}
         </h1>
         <p className="text-slate-400 text-sm md:text-base leading-relaxed">
-          Simule os custos reais de desenvolvimento, infraestrutura em nuvem, prazos em semanas e a arquitetura ideal
-          de software adaptada com precisão ao nicho comercial da sua empresa.
+          {ui.subtitle}
         </p>
       </div>
 
       {/* Stepper de Navegação */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-900/60 p-2 rounded-2xl border border-slate-800 backdrop-blur-sm">
-        {[
-          { step: 1, title: '1. Setor & Nicho', desc: 'Segmento da economia' },
-          { step: 2, title: '2. Porte da Empresa', desc: 'Volume e colaboradores' },
-          { step: 3, title: '3. Maturidade Digital', desc: 'Sistemas atuais' },
-          { step: 4, title: '4. Objetivo Principal', desc: 'Meta do projeto' }
-        ].map((item) => (
+        {ui.steps.map((item) => (
           <button
             key={item.step}
             onClick={() => setCurrentStep(item.step)}
@@ -216,20 +216,20 @@ export const BusinessView: React.FC = () => {
               <div>
                 <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
                   <Briefcase size={20} className="text-cyan-400" />
-                  Selecione o Setor da Economia
+                  {ui.sectorTitle}
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Cada setor possui padrões arquiteturais e exigências regulatórias únicas.
+                  {ui.sectorSubtitle}
                 </p>
               </div>
               <span className="text-xs font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/50 px-2.5 py-1 rounded-lg self-start">
-                Etapa 1 de 4
+                {ui.stepCounterPrefix} 1 {ui.stepCounterOf} 4
               </span>
             </div>
 
             {/* Grid dos Setores */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.values(ECONOMIC_SECTORS).map((sec) => {
+              {Object.values(sectors).map((sec) => {
                 const IconComponent = SECTOR_ICONS[sec.id] || Briefcase;
                 const isSelected = sectorId === sec.id;
                 return (
@@ -263,7 +263,7 @@ export const BusinessView: React.FC = () => {
                     </div>
 
                     <div className="text-[11px] text-cyan-400 font-medium flex items-center gap-1 pt-2 border-t border-slate-800/80">
-                      <span>Stack sugerida: {sec.recommendedBackend.split(' ')[0]} + {sec.recommendedFrontend.split(' ')[0]}</span>
+                      <span>{ui.suggestedStackPrefix} {sec.recommendedBackend.split(' ')[0]} + {sec.recommendedFrontend.split(' ')[0]}</span>
                     </div>
                   </div>
                 );
@@ -273,7 +273,7 @@ export const BusinessView: React.FC = () => {
             {/* Nicho Específico */}
             <div className="pt-4 space-y-3">
               <label className="block text-sm font-semibold text-slate-200">
-                Qual o nicho específico ou especialidade da empresa?
+                {ui.nichePrompt}
               </label>
               <div className="flex flex-wrap gap-2">
                 {selectedSector.typicalNiches.map((niche) => (
@@ -293,7 +293,7 @@ export const BusinessView: React.FC = () => {
               </div>
               <input
                 type="text"
-                placeholder="Ou digite o nicho exato (ex: Distribuidora de Medicamentos Especiais, E-commerce de Peças Náuticas...)"
+                placeholder={ui.nichePlaceholder}
                 value={specificNiche}
                 onChange={(e) => setSpecificNiche(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
@@ -309,20 +309,20 @@ export const BusinessView: React.FC = () => {
               <div>
                 <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
                   <Building2 size={20} className="text-cyan-400" />
-                  Qual o Porte da Organização?
+                  {ui.sizeTitle}
                 </h2>
                 <p className="text-xs text-slate-400">
-                  O tamanho da equipe e volume transacional calibram os custos de licença, governança e cloud.
+                  {ui.sizeSubtitle}
                 </p>
               </div>
               <span className="text-xs font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/50 px-2.5 py-1 rounded-lg self-start">
-                Etapa 2 de 4
+                {ui.stepCounterPrefix} 2 {ui.stepCounterOf} 4
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {(Object.keys(COMPANY_SIZES) as CompanySize[]).map((sizeKey) => {
-                const sizeItem = COMPANY_SIZES[sizeKey];
+              {(Object.keys(companySizes) as CompanySize[]).map((sizeKey) => {
+                const sizeItem = companySizes[sizeKey];
                 const isSelected = companySize === sizeKey;
                 return (
                   <div
@@ -343,7 +343,7 @@ export const BusinessView: React.FC = () => {
                     <p className="text-xs text-slate-400 leading-relaxed">{sizeItem.description}</p>
                     <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex items-center gap-1.5">
                       <Cpu size={13} className="text-cyan-400 shrink-0" />
-                      <span>Squad típica: {sizeItem.typicalStaff}</span>
+                      <span>{ui.typicalSquadPrefix} {sizeItem.typicalStaff}</span>
                     </div>
                   </div>
                 );
@@ -359,20 +359,20 @@ export const BusinessView: React.FC = () => {
               <div>
                 <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
                   <Database size={20} className="text-cyan-400" />
-                  Maturidade Digital Atual da Empresa
+                  {ui.maturityTitle}
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Impacta diretamente a complexidade de saneamento de dados e curva de migração da equipe.
+                  {ui.maturitySubtitle}
                 </p>
               </div>
               <span className="text-xs font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/50 px-2.5 py-1 rounded-lg self-start">
-                Etapa 3 de 4
+                {ui.stepCounterPrefix} 3 {ui.stepCounterOf} 4
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {(Object.keys(MATURITY_LEVELS) as DigitalMaturityLevel[]).map((levelKey) => {
-                const item = MATURITY_LEVELS[levelKey];
+              {(Object.keys(maturityLevels) as DigitalMaturityLevel[]).map((levelKey) => {
+                const item = maturityLevels[levelKey];
                 const isSelected = maturityLevel === levelKey;
                 return (
                   <div
@@ -392,7 +392,7 @@ export const BusinessView: React.FC = () => {
                     </div>
                     <p className="text-xs text-slate-400 leading-relaxed">{item.summary}</p>
                     <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                      <span>Fator de complexidade na migração:</span>
+                      <span>{ui.migrationFactorLabel}</span>
                       <span className="font-mono font-bold text-cyan-400">{item.complexityFactor}x</span>
                     </div>
                   </div>
@@ -409,20 +409,20 @@ export const BusinessView: React.FC = () => {
               <div>
                 <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
                   <TrendingUp size={20} className="text-cyan-400" />
-                  Qual a Principal Meta do Projeto?
+                  {ui.goalTitle}
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Define o escopo central da primeira entrega (MVP) e a arquitetura primária.
+                  {ui.goalSubtitle}
                 </p>
               </div>
               <span className="text-xs font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/50 px-2.5 py-1 rounded-lg self-start">
-                Etapa 4 de 4
+                {ui.stepCounterPrefix} 4 {ui.stepCounterOf} 4
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(Object.keys(PROJECT_GOALS) as ProjectPrimaryGoal[]).map((goalKey) => {
-                const item = PROJECT_GOALS[goalKey];
+              {(Object.keys(projectGoals) as ProjectPrimaryGoal[]).map((goalKey) => {
+                const item = projectGoals[goalKey];
                 const isSelected = primaryGoal === goalKey;
                 return (
                   <div
@@ -443,8 +443,8 @@ export const BusinessView: React.FC = () => {
                     </div>
 
                     <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-                      <span>Prazo base estimado:</span>
-                      <span className="font-mono text-cyan-400">{item.baseWeeks} semanas</span>
+                      <span>{ui.baseTimelineLabel}</span>
+                      <span className="font-mono text-cyan-400">{item.baseWeeks} {ui.weeks}</span>
                     </div>
                   </div>
                 );
@@ -454,11 +454,11 @@ export const BusinessView: React.FC = () => {
             {/* Requisitos Adicionais Opcionais */}
             <div className="pt-2 space-y-2">
               <label className="block text-xs font-semibold text-slate-300">
-                Observações ou Requisitos Específicos do seu Negócio (Opcional)
+                {ui.customReqLabel}
               </label>
               <textarea
                 rows={2}
-                placeholder="Ex: 'Precisamos integrar com o ERP Totvs Protheus existente e operar offline no depósito'..."
+                placeholder={ui.customReqPlaceholder}
                 value={customRequirements}
                 onChange={(e) => setCustomRequirements(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
@@ -479,7 +479,7 @@ export const BusinessView: React.FC = () => {
                 : 'border-slate-700 hover:border-slate-600 text-slate-300 hover:text-white bg-slate-800/60'
             }`}
           >
-            ← Voltar Etapa
+            {ui.prevStepBtn}
           </button>
 
           <button
@@ -492,7 +492,7 @@ export const BusinessView: React.FC = () => {
                 : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-md shadow-cyan-500/20'
             }`}
           >
-            <span>Próxima Etapa</span>
+            <span>{ui.nextStepBtn}</span>
             <ChevronRight size={14} />
           </button>
         </div>
@@ -504,10 +504,10 @@ export const BusinessView: React.FC = () => {
           <div>
             <h2 className="text-2xl font-black text-slate-100 tracking-tight flex items-center gap-2">
               <TrendingUp className="text-cyan-400" size={24} />
-              Projeção Orçamentária & Técnica
+              {ui.projectionTitle}
             </h2>
             <p className="text-xs text-slate-400">
-              Cálculo estimado para: <strong className="text-slate-200">{selectedSector.name}</strong> ({currentInput.specificNiche})
+              {ui.estimatedForPrefix} <strong className="text-slate-200">{selectedSector.name}</strong> ({currentInput.specificNiche})
             </p>
           </div>
 
@@ -519,10 +519,10 @@ export const BusinessView: React.FC = () => {
               type="button"
               onClick={handleDownloadPreview}
               className="px-4 py-2.5 rounded-xl border border-cyan-800/70 hover:border-cyan-500 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 hover:text-white text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm"
-              title="Baixar resumo executivo preliminar em PDF"
+              title={ui.previewBtnTitle}
             >
               <Download size={14} className="text-cyan-400" />
-              <span>Baixar Preview Gratuito (.pdf)</span>
+              <span>{ui.downloadPreviewPdf}</span>
             </button>
 
             {/* Botão 2: Dossiê Completo */}
@@ -531,10 +531,10 @@ export const BusinessView: React.FC = () => {
               type="button"
               onClick={() => setIsLeadModalOpen(true)}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-cyan-500/25 transition-all cursor-pointer"
-              title="Acessar dossiê analítico completo com 6 páginas"
+              title={ui.completeBtnTitle}
             >
               <Sparkles size={14} className="text-cyan-200" />
-              <span>Obter Dossiê Analítico Completo (6 Páginas)</span>
+              <span>{ui.downloadFullPdf}</span>
             </button>
           </div>
         </div>
@@ -552,47 +552,47 @@ export const BusinessView: React.FC = () => {
           {/* Card Capex */}
           <div className="bg-slate-900/60 border border-cyan-500/40 rounded-2xl p-5 space-y-2 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl pointer-events-none" />
-            <span className="text-[11px] font-bold tracking-wider text-cyan-400 uppercase">Investimento (Capex)</span>
+            <span className="text-[11px] font-bold tracking-wider text-cyan-400 uppercase">{ui.kpiCapex}</span>
             <div className="text-2xl font-black text-slate-100">
-              R$ {assessment.capexMin.toLocaleString('pt-BR')} a {assessment.capexMax.toLocaleString('pt-BR')}
+              R$ {assessment.capexMin.toLocaleString(pdf.currencyLocale)} {ui.rangeJoin} {assessment.capexMax.toLocaleString(pdf.currencyLocale)}
             </div>
-            <p className="text-xs text-slate-400">Desenvolvimento integral e homologação de software sob medida.</p>
+            <p className="text-xs text-slate-400">{pdf.capexSubnote}</p>
           </div>
 
           {/* Card Opex */}
           <div className="bg-slate-900/60 border border-emerald-500/40 rounded-2xl p-5 space-y-2 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none" />
-            <span className="text-[11px] font-bold tracking-wider text-emerald-400 uppercase">Custo Nuvem (Opex)</span>
+            <span className="text-[11px] font-bold tracking-wider text-emerald-400 uppercase">{ui.kpiOpex}</span>
             <div className="text-2xl font-black text-slate-100">
-              R$ {assessment.opexMonthlyMin.toLocaleString('pt-BR')} a {assessment.opexMonthlyMax.toLocaleString('pt-BR')}{' '}
-              <span className="text-xs font-normal text-slate-400">/mês</span>
+              R$ {assessment.opexMonthlyMin.toLocaleString(pdf.currencyLocale)} {ui.rangeJoin} {assessment.opexMonthlyMax.toLocaleString(pdf.currencyLocale)}{' '}
+              <span className="text-xs font-normal text-slate-400">{ui.perMonth}</span>
             </div>
             <p className="text-xs text-slate-400">
-              Servidores gerenciados na {assessment.cloudSimulation.provider} ({assessment.cloudSimulation.tier}).
+              {assessment.cloudSimulation.provider} ({assessment.cloudSimulation.tier})
             </p>
           </div>
 
           {/* Card Prazos */}
           <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-2">
-            <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Tempo de Rollout</span>
+            <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">{ui.kpiTimeline}</span>
             <div className="text-2xl font-black text-slate-100">
-              {assessment.timelineWeeksMin} a {assessment.timelineWeeksMax}{' '}
-              <span className="text-xs font-normal text-slate-400">semanas</span>
+              {assessment.timelineWeeksMin} {ui.rangeJoin} {assessment.timelineWeeksMax}{' '}
+              <span className="text-xs font-normal text-slate-400">{ui.weeks}</span>
             </div>
             <p className="text-xs text-slate-400">
-              Distribuído em aprox. {assessment.sprintsCount} sprints quinzenais ágeis.
+              ~{assessment.sprintsCount} {ui.sprintsOf2Weeks}
             </p>
           </div>
 
           {/* Card Squad */}
           <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-2">
-            <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Tamanho do Squad</span>
+            <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">{ui.kpiSprints}</span>
             <div className="text-2xl font-black text-slate-100">
               {assessment.recommendedSquad.length}{' '}
-              <span className="text-xs font-normal text-slate-400">profissionais</span>
+              <span className="text-xs font-normal text-slate-400">{ui.professionalsUnit}</span>
             </div>
             <p className="text-xs text-slate-400">
-              Tech Lead, Desenvolvedores Sêniores, DevOps e Analista QA.
+              {ui.squadSummaryNote}
             </p>
           </div>
         </div>
@@ -602,16 +602,16 @@ export const BusinessView: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2">
               <Cpu className="text-cyan-400" size={18} />
-              Arquitetura Recomendada para {selectedSector.name}
+              {ui.archTitle} {selectedSector.name}
             </h3>
-            <span className="text-[11px] text-slate-400">Integração nativa com guias técnicos do CodeCompare</span>
+            <span className="text-[11px] text-slate-400">{ui.archBadgeNote}</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-400">
                 <Code2 size={14} />
-                <span>Frontend UI/UX</span>
+                <span>{pdf.stackLayers.frontend}</span>
               </div>
               <p className="text-xs font-semibold text-slate-200">{selectedSector.recommendedFrontend}</p>
             </div>
@@ -619,7 +619,7 @@ export const BusinessView: React.FC = () => {
             <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-blue-400">
                 <Server size={14} />
-                <span>Backend & APIs</span>
+                <span>{pdf.stackLayers.backend}</span>
               </div>
               <p className="text-xs font-semibold text-slate-200">{selectedSector.recommendedBackend}</p>
             </div>
@@ -627,7 +627,7 @@ export const BusinessView: React.FC = () => {
             <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
                 <Database size={14} />
-                <span>Banco de Dados</span>
+                <span>{pdf.stackLayers.database}</span>
               </div>
               <p className="text-xs font-semibold text-slate-200">{selectedSector.recommendedDatabase}</p>
             </div>
@@ -635,14 +635,14 @@ export const BusinessView: React.FC = () => {
             <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400">
                 <Cloud size={14} />
-                <span>Infraestrutura Nuvem</span>
+                <span>{pdf.stackLayers.cloud}</span>
               </div>
               <p className="text-xs font-semibold text-slate-200">{selectedSector.recommendedCloud}</p>
             </div>
           </div>
 
           <div className="p-4 rounded-xl bg-cyan-950/20 border border-cyan-800/40 text-xs text-slate-300 leading-relaxed">
-            <strong className="text-cyan-300 font-bold">Padrão Arquitetural: </strong>
+            <strong className="text-cyan-300 font-bold">{ui.archPatternLabel} </strong>
             {selectedSector.architectureHighlight}
           </div>
         </div>
@@ -651,7 +651,7 @@ export const BusinessView: React.FC = () => {
         <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
           <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2">
             <Calendar className="text-cyan-400" size={18} />
-            Cronograma de Implementação Faseada
+            {ui.rolloutTitle}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -689,23 +689,23 @@ export const BusinessView: React.FC = () => {
             <div className="space-y-2">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 text-[11px] font-semibold">
                 <Sparkles size={12} />
-                <span>DOSSIÊ COMPLETO // 6 PÁGINAS</span>
+                <span>{ui.modalBadge}</span>
               </div>
               <h3 className="text-xl font-bold text-slate-100">
-                Onde devemos enviar seu Relatório Analítico?
+                {ui.modalTitle}
               </h3>
               <p className="text-xs text-slate-400">
-                O PDF completo será baixado imediatamente no seu dispositivo com o nome da sua empresa personalizado.
+                {ui.modalSubtitle}
               </p>
             </div>
 
             <form onSubmit={handleDownloadComplete} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-slate-300">Seu Nome Completo *</label>
+                <label className="block text-xs font-medium text-slate-300">{ui.modalNameLabel}</label>
                 <input
                   type="text"
                   required
-                  placeholder="Ex: Carlos Eduardo"
+                  placeholder={ui.modalNamePlaceholder}
                   value={leadData.name}
                   onChange={(e) => setLeadData({ ...leadData, name: e.target.value })}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
@@ -714,11 +714,11 @@ export const BusinessView: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-slate-300">E-mail Profissional *</label>
+                  <label className="block text-xs font-medium text-slate-300">{ui.modalEmailLabel}</label>
                   <input
                     type="email"
                     required
-                    placeholder="carlos@empresa.com.br"
+                    placeholder={ui.modalEmailPlaceholder}
                     value={leadData.email}
                     onChange={(e) => setLeadData({ ...leadData, email: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
@@ -726,10 +726,10 @@ export const BusinessView: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-slate-300">WhatsApp / Telefone</label>
+                  <label className="block text-xs font-medium text-slate-300">{ui.modalPhoneLabel}</label>
                   <input
                     type="tel"
-                    placeholder="(11) 99999-9999"
+                    placeholder={ui.modalPhonePlaceholder}
                     value={leadData.phone}
                     onChange={(e) => setLeadData({ ...leadData, phone: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
@@ -738,10 +738,10 @@ export const BusinessView: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-slate-300">Nome da Empresa</label>
+                <label className="block text-xs font-medium text-slate-300">{ui.modalCompanyLabel}</label>
                 <input
                   type="text"
-                  placeholder="Ex: Indústrias Brasil S/A"
+                  placeholder={ui.modalCompanyPlaceholder}
                   value={leadData.companyName}
                   onChange={(e) => setLeadData({ ...leadData, companyName: e.target.value })}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
@@ -756,7 +756,7 @@ export const BusinessView: React.FC = () => {
                   className="mt-0.5 rounded border-slate-700 bg-slate-950 text-cyan-500 focus:ring-0"
                 />
                 <span className="text-[11px] text-slate-400">
-                  Desejo receber contato técnico de um especialista para orçamento de squad ou consultoria.
+                  {ui.modalConsultCheck}
                 </span>
               </label>
 
@@ -766,18 +766,18 @@ export const BusinessView: React.FC = () => {
                 className="w-full py-3 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer mt-4 disabled:opacity-60"
               >
                 {isSubmittingLead ? (
-                  <span>Registrando e Gerando Relatório...</span>
+                  <span>{ui.modalSubmittingBtn}</span>
                 ) : (
                   <>
                     <Download size={15} />
-                    <span>Gerar & Baixar Dossiê Completo (.pdf)</span>
+                    <span>{ui.modalSubmitBtn}</span>
                   </>
                 )}
               </button>
 
               <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-500 pt-1">
                 <Lock size={11} />
-                <span>Seus dados estão protegidos em conformidade com a LGPD (Lei 13.709/2018).</span>
+                <span>{ui.modalPrivacyNote}</span>
               </div>
             </form>
           </div>

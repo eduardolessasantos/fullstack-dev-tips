@@ -9,6 +9,7 @@ export type PageId =
   | 'courses'
   | 'decision-matrix'
   | 'function-points'
+  | 'code-for-fun'
   | 'business'
   | 'about'
   | 'editorial'
@@ -279,3 +280,105 @@ export interface LeadCaptureData {
   wantsConsultation: boolean;
 }
 
+export type CodeForFunMode = 'challenge' | 'bug-hunt' | 'sandbox';
+
+export type CodeForFunTrack = 'warmup' | 'hands-on' | 'senior-trap';
+
+export type CodeForFunLanguage = 'javascript' | 'typescript' | 'python' | 'sql';
+
+export interface ConsoleEntry {
+  type: 'log' | 'info' | 'warn' | 'error';
+  text: string;
+}
+
+export interface TraceStep {
+  stepNumber: number;
+  line: number;
+  phase?: string;
+  variables: Record<string, string>;
+  output: string[];
+  note: string;
+}
+
+export interface SqlTableData {
+  name: string;
+  description: string;
+  columns: string[];
+  rows: Record<string, string | number | boolean | null>[];
+}
+
+export interface SqlQueryResult {
+  columns: string[];
+  rows: Record<string, string | number | boolean | null>[];
+  rowCount: number;
+}
+
+export interface CodeForFunTestResult {
+  label: string;
+  passed: boolean;
+  detail: string;
+}
+
+export interface VisualCanvasCommand {
+  kind: 'clear' | 'rect' | 'circle' | 'line' | 'text';
+  x?: number;
+  y?: number;
+  w?: number;
+  h?: number;
+  r?: number;
+  x2?: number;
+  y2?: number;
+  color?: string;
+  size?: number;
+  text?: string;
+}
+
+export interface CodeForFunExecutionOutcome {
+  ok: boolean;
+  language: CodeForFunLanguage;
+  logs: ConsoleEntry[];
+  returnValue?: string;
+  traceSteps?: TraceStep[];
+  sqlResult?: SqlQueryResult;
+  visualScene?: VisualCanvasCommand[];
+  durationMs: number;
+  errorRaw?: string;
+  errorFriendly?: string;
+}
+
+export interface CodeForFunItem {
+  id: string;
+  title: string;
+  mode: CodeForFunMode;
+  track: CodeForFunTrack;
+  language: CodeForFunLanguage;
+  xp: number;
+  estimatedMinutes: number;
+  funnyHook: string;
+  prompt: string;
+  starterCode: string;
+  solutionCode: string;
+  hints: string[];
+  ahaTitle: string;
+  ahaExplanation: string[];
+  hasVisualStage?: boolean;
+  sqlTables?: string[];
+  validate?: (outcome: CodeForFunExecutionOutcome, code: string) => CodeForFunTestResult[];
+}
+
+export interface CodeForFunBadge {
+  id: string;
+  title: string;
+  description: string;
+  iconName: 'terminal' | 'bug' | 'flame' | 'sparkles' | 'database' | 'trophy';
+}
+
+export interface CodeForFunPlayerState {
+  xp: number;
+  streak: number;
+  bestStreak: number;
+  completedIds: string[];
+  unlockedBadges: string[];
+  soundEnabled: boolean;
+  savedCodeById: Record<string, string>;
+}

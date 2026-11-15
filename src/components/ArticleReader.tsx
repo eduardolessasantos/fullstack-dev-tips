@@ -16,8 +16,7 @@ import {
 import { DetailedArticle, PageId } from '../types.ts';
 import { CodeBlock } from './CodeBlock.tsx';
 import { AdUnit } from './AdUnit.tsx';
-import { useLanguage } from '../i18n/LanguageContext.tsx';
-import { DETAILED_ARTICLES } from '../data/articlesData.ts';
+import { useLanguage, useTranslationNamespace } from '../i18n/LanguageContext.tsx';
 
 interface ArticleReaderProps {
   article: DetailedArticle;
@@ -35,6 +34,7 @@ export function ArticleReader({
   onNavigateToPage
 }: ArticleReaderProps) {
   const { t } = useLanguage();
+  const { data: articlesNs } = useTranslationNamespace('articles');
   const [scrollProgress, setScrollProgress] = useState(0);
   const [copied, setCopied] = useState(false);
 
@@ -165,7 +165,7 @@ export function ArticleReader({
             </p>
             <div className="space-y-2 pt-2">
               <span className="text-xs font-mono uppercase tracking-wider text-rose-300 font-semibold block">
-                Sintomas observados em produção:
+                {t.article.symptomsLabel}
               </span>
               <ul className="space-y-1.5 text-xs sm:text-sm text-slate-400">
                 {article.contextProblem.symptoms.map((symptom, i) => (
@@ -195,11 +195,11 @@ export function ArticleReader({
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-950 border-b border-slate-800 text-[11px] font-mono uppercase text-slate-400">
-                      <th className="p-3.5">Métrica Analisada</th>
-                      <th className="p-3.5">Tecnologia A</th>
-                      <th className="p-3.5">Tecnologia B</th>
-                      {article.benchmarks.data[0]?.stackC && <th className="p-3.5">Tecnologia C</th>}
-                      <th className="p-3.5">Análise Técnica</th>
+                      <th className="p-3.5">{t.article.benchmarkMetric}</th>
+                      <th className="p-3.5">{t.article.benchmarkTechA}</th>
+                      <th className="p-3.5">{t.article.benchmarkTechB}</th>
+                      {article.benchmarks.data[0]?.stackC && <th className="p-3.5">{t.article.benchmarkTechC}</th>}
+                      <th className="p-3.5">{t.article.benchmarkAnalysis}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/70">
@@ -389,26 +389,26 @@ export function ArticleReader({
             </div>
             <nav className="space-y-1.5 text-xs text-slate-400">
               <a href="#introducao" className="block py-1 hover:text-cyan-300 transition-colors">
-                • 1. Contexto & Introdução
+                {t.article.tocIntro}
               </a>
               <a href="#problema-real" className="block py-1 hover:text-cyan-300 transition-colors">
-                • 2. O Problema no Mundo Real
+                {t.article.tocProblem}
               </a>
               {article.benchmarks && (
                 <a href="#benchmarks" className="block py-1 hover:text-cyan-300 transition-colors">
-                  • 3. Benchmarks & Latência
+                  {t.article.tocBenchmarks}
                 </a>
               )}
               <a href="#tradeoffs" className="block py-1 hover:text-cyan-300 transition-colors">
-                • 4. Análise de Trade-Offs
+                {t.article.tocTradeoffs}
               </a>
               {article.codeComparison && (
                 <a href="#codigo" className="block py-1 hover:text-cyan-300 transition-colors">
-                  • 5. Comparativo de Código
+                  {t.article.tocCode}
                 </a>
               )}
               <a href="#conclusao" className="block py-1 hover:text-cyan-300 transition-colors">
-                • 6. Conclusão Pragmática
+                {t.article.tocConclusion}
               </a>
             </nav>
           </div>
@@ -425,7 +425,7 @@ export function ArticleReader({
               {t.common.relatedArticles}
             </span>
             <div className="space-y-2">
-              {DETAILED_ARTICLES.filter(a => a.id !== article.id).slice(0, 3).map(rel => (
+              {(articlesNs?.articles ?? []).filter(a => a.id !== article.id).slice(0, 3).map(rel => (
                 <button
                   key={rel.id}
                   onClick={() => onNavigateToArticle(rel.id)}

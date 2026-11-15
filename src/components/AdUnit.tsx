@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Megaphone } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext.tsx';
 
 interface AdUnitProps {
   slot: string;
@@ -48,9 +49,11 @@ export const AdUnit: React.FC<AdUnitProps> = ({
   slot,
   format = 'auto',
   responsive = true,
-  label = 'Publicidade',
+  label,
   className = ''
 }) => {
+  const { t } = useLanguage();
+  const resolvedLabel = label || t.common.advertisement;
   const containerRef = useRef<HTMLDivElement>(null);
   const insRef = useRef<HTMLModElement>(null);
   const [isRejected, setIsRejected] = useState(false);
@@ -109,7 +112,7 @@ export const AdUnit: React.FC<AdUnitProps> = ({
       <div className="flex items-center justify-between px-4 py-1.5 bg-slate-950/40 border-b border-slate-800/60 text-[11px] font-medium text-slate-400">
         <span className="flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
           <Megaphone size={12} className="text-cyan-400" />
-          {label}
+          {resolvedLabel}
         </span>
       </div>
 

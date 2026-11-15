@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Globe, Check, ChevronDown } from 'lucide-react';
+import { Globe, Check, ChevronDown, Loader2 } from 'lucide-react';
 import { useLanguage, LANGUAGE_OPTIONS } from '../i18n/LanguageContext.tsx';
 import { SupportedLanguage } from '../i18n/types.ts';
 
@@ -9,7 +9,7 @@ interface LanguageSelectorProps {
 }
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ theme, className = '' }) => {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t, isTranslating } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -56,14 +56,18 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ theme, class
         }`}
         aria-haspopup="true"
         aria-expanded={isOpen}
-        title="Alterar idioma / Switch language / Cambiar idioma"
+        title={t.common.languageMenuTitle}
       >
         <span className="text-sm leading-none">{currentOption.flag}</span>
         <span className="font-mono text-[11px] font-bold uppercase">{currentOption.code}</span>
-        <ChevronDown
-          size={12}
-          className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-        />
+        {isTranslating ? (
+          <Loader2 size={12} className="text-cyan-400 animate-spin" />
+        ) : (
+          <ChevronDown
+            size={12}
+            className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          />
+        )}
       </button>
 
       {isOpen && (
@@ -78,7 +82,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ theme, class
         >
           <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400 border-b border-slate-800/40 flex items-center gap-1.5">
             <Globe size={11} className="text-cyan-400" />
-            <span>Idioma / Language</span>
+            <span>{t.common.languageMenuHeader}</span>
           </div>
 
           <div className="pt-1">

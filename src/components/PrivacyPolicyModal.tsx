@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, ShieldCheck, Lock, FileText, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext.tsx';
 
 interface PrivacyPolicyModalProps {
   isOpen: boolean;
@@ -7,12 +8,14 @@ interface PrivacyPolicyModalProps {
 }
 
 export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ isOpen, onClose }) => {
+  const { t } = useLanguage();
   if (!isOpen) return null;
+
+  const p = t.privacy;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 no-ads">
       <div className="relative w-full max-w-3xl max-h-[85vh] flex flex-col bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden text-slate-200">
-
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
           <div className="flex items-center gap-3">
@@ -20,8 +23,8 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ isOpen, 
               <ShieldCheck size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-white">Política de Privacidade & Termos LGPD</h3>
-              <p className="text-xs text-slate-400">Em conformidade com a Lei Federal nº 13.709/2018 (LGPD) e diretrizes do Google AdSense</p>
+              <h3 className="font-bold text-lg text-white">{p.title}</h3>
+              <p className="text-xs text-slate-400">{p.subtitle}</p>
             </div>
           </div>
           <button
@@ -36,65 +39,69 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ isOpen, 
         <div className="p-6 overflow-y-auto space-y-6 text-sm leading-relaxed text-slate-300">
           <section className="space-y-2">
             <h4 className="text-white font-semibold flex items-center gap-2 text-base">
-              <Lock size={16} className="text-cyan-400" /> 1. Introdução e Controlador de Dados
+              <Lock size={16} className="text-cyan-400" /> {p.s1Title}
             </h4>
-            <p>
-              O <strong>CodeCompare</strong> (disponível em <code>https://www.devedulessa.com.br</code>), fundado por Eduardo Lessa, respeita a privacidade de seus visitantes e está comprometido com a segurança e a transparência no tratamento de dados pessoais, de acordo com a Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018) e GDPR.
-            </p>
+            <p>{p.s1Body}</p>
           </section>
 
           <section className="space-y-2">
             <h4 className="text-white font-semibold flex items-center gap-2 text-base">
-              <FileText size={16} className="text-violet-400" /> 2. Cookies e Google AdSense
+              <FileText size={16} className="text-violet-400" /> {p.s2Title}
             </h4>
-            <p>
-              Este blog utiliza o serviço de publicidade <strong>Google AdSense</strong>. O Google e seus parceiros usam cookies (como o cookie DoubleClick DART) para veicular anúncios aos usuários com base em visitas anteriores a este ou a outros sites na internet.
-            </p>
+            <p>{p.s2Body}</p>
             <ul className="list-disc pl-5 space-y-1 text-slate-400">
-              <li>Fornecedores terceiros, incluindo o Google, usam cookies para veicular anúncios com base em acessos anteriores do usuário.</li>
-              <li>O uso de cookies de publicidade permite ao Google e a seus parceiros veicular anúncios para os usuários com base nas visitas a seus sites e/ou a outros sites na Internet.</li>
-              <li>Os usuários podem desativar a publicidade personalizada acessando as <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">Configurações de Anúncios do Google</a> ou através do site <a href="https://aboutads.info" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">aboutads.info</a>.</li>
+              {p.s2Bullets[0] && <li>{p.s2Bullets[0]}</li>}
+              {p.s2Bullets[1] && <li>{p.s2Bullets[1]}</li>}
+              {p.s2Bullets[2] && (
+                <li>
+                  {p.s2Bullets[2]}{' '}
+                  <a
+                    href="https://adssettings.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cyan-400 underline"
+                  >
+                    {p.s2LinkText1}
+                  </a>{' '}
+                  {p.s2Between}{' '}
+                  <a
+                    href="https://aboutads.info"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cyan-400 underline"
+                  >
+                    {p.s2LinkText2}
+                  </a>
+                  .
+                </li>
+              )}
             </ul>
           </section>
 
           <section className="space-y-2">
             <h4 className="text-white font-semibold flex items-center gap-2 text-base">
-              <CheckCircle2 size={16} className="text-emerald-400" /> 3. Declaração do Arquivo ads.txt
+              <CheckCircle2 size={16} className="text-emerald-400" /> {p.s3Title}
             </h4>
-            <p>
-              Em conformidade com a iniciativa do IAB Tech Lab e exigências do Google AdSense, mantemos um arquivo público <code>/ads.txt</code> na raiz do domínio que declara os vendedores e redes autorizados a comercializar o inventário publicitário deste blog, prevenindo fraudes e garantindo autenticidade.
-            </p>
+            <p>{p.s3Body}</p>
           </section>
 
           <section className="space-y-2">
-            <h4 className="text-white font-semibold text-base">4. Direitos do Titular de Dados (Art. 18 da LGPD)</h4>
-            <p>
-              Você, como titular de dados pessoais, possui os seguintes direitos garantidos por lei:
-            </p>
+            <h4 className="text-white font-semibold text-base">{p.s4Title}</h4>
+            <p>{p.s4Intro}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800">
-                <strong className="text-cyan-400 block mb-1">Confirmação e Acesso</strong>
-                Confirmar a existência de tratamento e acessar os dados fornecidos.
-              </div>
-              <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800">
-                <strong className="text-cyan-400 block mb-1">Revogação do Consentimento</strong>
-                Revogar seu consentimento para cookies a qualquer momento através do banner de preferências.
-              </div>
-              <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800">
-                <strong className="text-cyan-400 block mb-1">Anonimização ou Eliminação</strong>
-                Solicitar o bloqueio ou exclusão de dados desnecessários ou tratados em desconformidade.
-              </div>
-              <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800">
-                <strong className="text-cyan-400 block mb-1">Informação sobre Compartilhamento</strong>
-                Saber com quais entidades públicas ou privadas compartilhamos dados (ex: Google LLC).
-              </div>
+              {p.s4Cards.map((card, i) => (
+                <div key={i} className="p-3 rounded-lg bg-slate-950/80 border border-slate-800">
+                  <strong className="text-cyan-400 block mb-1">{card.title}</strong>
+                  {card.desc}
+                </div>
+              ))}
             </div>
           </section>
 
           <section className="space-y-2">
-            <h4 className="text-white font-semibold text-base">5. Contato do Encarregado (DPO)</h4>
+            <h4 className="text-white font-semibold text-base">{p.s5Title}</h4>
             <p className="text-xs text-slate-400">
-              Para tirar dúvidas sobre esta política de privacidade ou exercer seus direitos previstos na LGPD, entre em contato através do e-mail oficial: <code>eduardolessa2011@gmail.com</code>.
+              {p.s5Body} <code>eduardolessa2011@gmail.com</code>.
             </p>
           </section>
         </div>
@@ -105,7 +112,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ isOpen, 
             onClick={onClose}
             className="px-5 py-2 text-sm font-semibold rounded-xl bg-cyan-500 text-white hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20"
           >
-            Entendido e Fechar
+            {p.closeBtn}
           </button>
         </div>
       </div>

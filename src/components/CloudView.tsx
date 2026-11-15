@@ -10,34 +10,35 @@ import {
   Award,
   ArrowRight,
   Terminal,
-  Server,
   Layers,
-  ShieldCheck,
-  DollarSign,
   Gauge,
-  HelpCircle,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
   Sliders
 } from 'lucide-react';
-import {
-  CLOUD_CATEGORIES,
-  CLOUD_COMPARISONS,
-  CLOUD_SCENARIOS,
-  CloudServiceComparison,
-  CloudArchitectureScenario
-} from '../data/cloudData.ts';
 import { CodeBlock } from './CodeBlock.tsx';
+import { useLanguage, useTranslationNamespace } from '../i18n/LanguageContext';
 
 interface CloudViewProps {
   onNavigateToPage?: (page: any) => void;
 }
 
 export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
+  const { t } = useLanguage();
+  const { data: cloudCourses } = useTranslationNamespace('cloudCourses');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [activeScenarioId, setActiveScenarioId] = useState<string>('enterprise-dotnet');
   const [expandedCodeSnippets, setExpandedCodeSnippets] = useState<Record<string, boolean>>({});
+
+  if (!cloudCourses) {
+    return (
+      <div className="py-20 text-center text-sm text-slate-400 animate-pulse">
+        {t.common.loadingTranslation}
+      </div>
+    );
+  }
+
+  const { cloudUi, cloudCategories, cloudComparisons, cloudScenarios } = cloudCourses;
 
   const toggleCodeSnippet = (key: string) => {
     setExpandedCodeSnippets((prev) => ({
@@ -46,12 +47,12 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
     }));
   };
 
-  const filteredComparisons = CLOUD_COMPARISONS.filter((item) => {
+  const filteredComparisons = cloudComparisons.filter((item) => {
     if (selectedCategory === 'all' || selectedCategory === 'scenarios') return true;
     return item.category === selectedCategory;
   });
 
-  const activeScenario = CLOUD_SCENARIOS.find((s) => s.id === activeScenarioId) || CLOUD_SCENARIOS[0];
+  const activeScenario = cloudScenarios.find((s) => s.id === activeScenarioId) || cloudScenarios[0];
 
   return (
     <div className="space-y-12 animate-in fade-in duration-300 no-ads">
@@ -63,46 +64,46 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
               <Cloud size={13} />
-              AWS (Amazon Web Services)
+              {cloudUi.awsBadgeLabel}
             </span>
-            <span className="text-slate-600 font-bold">vs</span>
+            <span className="text-slate-600 font-bold">{cloudUi.vsLabel}</span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">
               <Cloud size={13} />
-              Microsoft Azure
+              {cloudUi.azureBadgeLabel}
             </span>
             <span className="text-[11px] font-mono text-slate-500 ml-auto">
-              Atualizado para 2026 • Análise E-E-A-T
+              {cloudUi.updatedLabel}
             </span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-            Comparativo Cloud: <span className="text-amber-400">AWS</span> vs <span className="text-sky-400">Azure</span>
+            {cloudUi.titleBefore} <span className="text-amber-400">{cloudUi.awsShortBadge}</span> {cloudUi.titleVs} <span className="text-sky-400">{cloudUi.azureShortBadge}</span>
           </h1>
 
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-            Um guia prático de engenharia para decisões arquiteturais. Comparamos objetivamente os serviços fundamentais de <strong>Armazenamento (Object & Block Storage)</strong>, <strong>Deploy & Containers</strong>, <strong>Pipelines de CI/CD</strong> e <strong>Computação Serverless (Functions)</strong>, incluindo métricas reais de latência, modelos de custo e exemplos de infraestrutura como código (IaC).
+            {cloudUi.subtitle}
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
             <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
               <HardDrive size={18} className="text-cyan-400 mx-auto mb-1" />
-              <div className="text-xs font-bold text-white">Armazenamento</div>
-              <div className="text-[11px] text-slate-400">S3 vs Blob • EBS vs Disks</div>
+              <div className="text-xs font-bold text-white">{cloudUi.pillarStorageTitle}</div>
+              <div className="text-[11px] text-slate-400">{cloudUi.pillarStorageSub}</div>
             </div>
             <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
               <Rocket size={18} className="text-purple-400 mx-auto mb-1" />
-              <div className="text-xs font-bold text-white">Deploy & Containers</div>
-              <div className="text-[11px] text-slate-400">ECS vs Container Apps</div>
+              <div className="text-xs font-bold text-white">{cloudUi.pillarDeployTitle}</div>
+              <div className="text-[11px] text-slate-400">{cloudUi.pillarDeploySub}</div>
             </div>
             <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
               <GitBranch size={18} className="text-emerald-400 mx-auto mb-1" />
-              <div className="text-xs font-bold text-white">CI / CD & DevOps</div>
-              <div className="text-[11px] text-slate-400">CodePipeline vs GitHub/ADO</div>
+              <div className="text-xs font-bold text-white">{cloudUi.pillarCicdTitle}</div>
+              <div className="text-[11px] text-slate-400">{cloudUi.pillarCicdSub}</div>
             </div>
             <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
               <Zap size={18} className="text-amber-400 mx-auto mb-1" />
-              <div className="text-xs font-bold text-white">Serverless Functions</div>
-              <div className="text-[11px] text-slate-400">Lambda vs Azure Functions</div>
+              <div className="text-xs font-bold text-white">{cloudUi.pillarFunctionsTitle}</div>
+              <div className="text-[11px] text-slate-400">{cloudUi.pillarFunctionsSub}</div>
             </div>
           </div>
         </div>
@@ -110,7 +111,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
 
       {/* FILTRO POR CATEGORIA */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-        {CLOUD_CATEGORIES.map((cat) => {
+        {cloudCategories.map((cat) => {
           const isActive = selectedCategory === cat.id;
           return (
             <button
@@ -150,7 +151,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                       {item.category === 'deploy' && <Rocket size={14} className="text-purple-400" />}
                       {item.category === 'cicd' && <GitBranch size={14} className="text-emerald-400" />}
                       {item.category === 'functions' && <Zap size={14} className="text-amber-400" />}
-                      <span>{item.category.toUpperCase()} • DEEP DIVE</span>
+                      <span>{item.category.toUpperCase()} • {cloudUi.deepDiveTagSuffix}</span>
                     </span>
                     <h2 className="text-xl sm:text-2xl font-black text-white">
                       {item.title}
@@ -163,10 +164,10 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                   {/* Veredito Resumido */}
                   <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold font-mono bg-slate-900 border-slate-700">
                     <Award size={14} className="text-amber-400" />
-                    <span>Vencedor:</span>
-                    {item.verdict.winner === 'aws' && <span className="text-amber-400 font-extrabold">AWS</span>}
-                    {item.verdict.winner === 'azure' && <span className="text-sky-400 font-extrabold">Azure</span>}
-                    {item.verdict.winner === 'tie' && <span className="text-emerald-400 font-extrabold">Empate Técnico</span>}
+                    <span>{cloudUi.winnerLabel}</span>
+                    {item.verdict.winner === 'aws' && <span className="text-amber-400 font-extrabold">{cloudUi.awsShortBadge}</span>}
+                    {item.verdict.winner === 'azure' && <span className="text-sky-400 font-extrabold">{cloudUi.azureShortBadge}</span>}
+                    {item.verdict.winner === 'tie' && <span className="text-emerald-400 font-extrabold">{cloudUi.winnerTie}</span>}
                   </div>
                 </div>
 
@@ -183,14 +184,14 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                           </h3>
                         </div>
                         <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                          AWS
+                          {cloudUi.awsShortBadge}
                         </span>
                       </div>
 
                       {/* Principais Recursos */}
                       <div className="space-y-1.5">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block font-mono">
-                          Recursos & Capacidades
+                          {cloudUi.keyFeaturesLabel}
                         </span>
                         <ul className="space-y-1 text-xs text-slate-300">
                           {item.aws.keyFeatures.map((feat, idx) => (
@@ -206,7 +207,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                       <div className="space-y-1.5 pt-2">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block font-mono flex items-center gap-1.5">
                           <CheckCircle2 size={12} />
-                          Pontos Fortes (Vantagens)
+                          {cloudUi.strengthsLabel}
                         </span>
                         <ul className="space-y-1 text-xs text-slate-300">
                           {item.aws.strengths.map((str, idx) => (
@@ -222,7 +223,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                       <div className="space-y-1.5 pt-2">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-rose-400 block font-mono flex items-center gap-1.5">
                           <XCircle size={12} />
-                          Desvantagens / Atenções
+                          {cloudUi.weaknessesLabel}
                         </span>
                         <ul className="space-y-1 text-xs text-slate-400">
                           {item.aws.weaknesses.map((weak, idx) => (
@@ -237,7 +238,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                       {/* Modelo de Preço */}
                       <div className="pt-2 border-t border-slate-800 text-xs">
                         <span className="font-mono text-slate-400 block text-[11px] mb-1 font-bold">
-                          Estrutura de Cobrança:
+                          {cloudUi.pricingLabel}
                         </span>
                         <p className="text-slate-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px]">
                           {item.aws.pricingModel}
@@ -254,7 +255,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                         >
                           <span className="flex items-center gap-2">
                             <Terminal size={13} />
-                            {item.aws.codeSampleTitle || 'Ver Exemplo de Código AWS'}
+                            {item.aws.codeSampleTitle || cloudUi.defaultAwsCodeTitle}
                           </span>
                           {isAwsExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>
@@ -282,14 +283,14 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                           </h3>
                         </div>
                         <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
-                          Azure
+                          {cloudUi.azureShortBadge}
                         </span>
                       </div>
 
                       {/* Principais Recursos */}
                       <div className="space-y-1.5">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block font-mono">
-                          Recursos & Capacidades
+                          {cloudUi.keyFeaturesLabel}
                         </span>
                         <ul className="space-y-1 text-xs text-slate-300">
                           {item.azure.keyFeatures.map((feat, idx) => (
@@ -305,7 +306,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                       <div className="space-y-1.5 pt-2">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block font-mono flex items-center gap-1.5">
                           <CheckCircle2 size={12} />
-                          Pontos Fortes (Vantagens)
+                          {cloudUi.strengthsLabel}
                         </span>
                         <ul className="space-y-1 text-xs text-slate-300">
                           {item.azure.strengths.map((str, idx) => (
@@ -321,7 +322,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                       <div className="space-y-1.5 pt-2">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-rose-400 block font-mono flex items-center gap-1.5">
                           <XCircle size={12} />
-                          Desvantagens / Atenções
+                          {cloudUi.weaknessesLabel}
                         </span>
                         <ul className="space-y-1 text-xs text-slate-400">
                           {item.azure.weaknesses.map((weak, idx) => (
@@ -336,7 +337,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                       {/* Modelo de Preço */}
                       <div className="pt-2 border-t border-slate-800 text-xs">
                         <span className="font-mono text-slate-400 block text-[11px] mb-1 font-bold">
-                          Estrutura de Cobrança:
+                          {cloudUi.pricingLabel}
                         </span>
                         <p className="text-slate-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px]">
                           {item.azure.pricingModel}
@@ -353,7 +354,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                         >
                           <span className="flex items-center gap-2">
                             <Terminal size={13} />
-                            {item.azure.codeSampleTitle || 'Ver Exemplo de Código Azure'}
+                            {item.azure.codeSampleTitle || cloudUi.defaultAzureCodeTitle}
                           </span>
                           {isAzureExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>
@@ -375,43 +376,43 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                 <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800">
                   <div className="text-xs font-bold text-white uppercase font-mono tracking-wider mb-3 flex items-center gap-2">
                     <Gauge size={14} className="text-cyan-400" />
-                    <span>Métricas de Performance & Produtividade</span>
+                    <span>{cloudUi.metricsTitle}</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
                     <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-1.5">
-                      <span className="text-[11px] text-slate-400 font-mono block">Latência Típica</span>
+                      <span className="text-[11px] text-slate-400 font-mono block">{cloudUi.metricLatency}</span>
                       <div className="text-amber-400 font-mono text-[11px]">
-                        <strong>AWS:</strong> {item.metrics.latency.aws}
+                        <strong>{cloudUi.awsShortBadge}:</strong> {item.metrics.latency.aws}
                       </div>
                       <div className="text-sky-400 font-mono text-[11px]">
-                        <strong>Azure:</strong> {item.metrics.latency.azure}
+                        <strong>{cloudUi.azureShortBadge}:</strong> {item.metrics.latency.azure}
                       </div>
                     </div>
                     <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-1.5">
-                      <span className="text-[11px] text-slate-400 font-mono block">Escalabilidade</span>
+                      <span className="text-[11px] text-slate-400 font-mono block">{cloudUi.metricScalability}</span>
                       <div className="text-amber-400 font-mono text-[11px]">
-                        <strong>AWS:</strong> {item.metrics.scalability.aws}
+                        <strong>{cloudUi.awsShortBadge}:</strong> {item.metrics.scalability.aws}
                       </div>
                       <div className="text-sky-400 font-mono text-[11px]">
-                        <strong>Azure:</strong> {item.metrics.scalability.azure}
+                        <strong>{cloudUi.azureShortBadge}:</strong> {item.metrics.scalability.azure}
                       </div>
                     </div>
                     <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-1.5">
-                      <span className="text-[11px] text-slate-400 font-mono block">Developer Experience (DX)</span>
+                      <span className="text-[11px] text-slate-400 font-mono block">{cloudUi.metricDx}</span>
                       <div className="text-amber-400 font-mono text-[11px]">
-                        <strong>AWS:</strong> {item.metrics.developerExperience.aws}
+                        <strong>{cloudUi.awsShortBadge}:</strong> {item.metrics.developerExperience.aws}
                       </div>
                       <div className="text-sky-400 font-mono text-[11px]">
-                        <strong>Azure:</strong> {item.metrics.developerExperience.azure}
+                        <strong>{cloudUi.azureShortBadge}:</strong> {item.metrics.developerExperience.azure}
                       </div>
                     </div>
                     <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-1.5">
-                      <span className="text-[11px] text-slate-400 font-mono block">Ecossistema & Integração</span>
+                      <span className="text-[11px] text-slate-400 font-mono block">{cloudUi.metricEcosystem}</span>
                       <div className="text-amber-400 font-mono text-[11px]">
-                        <strong>AWS:</strong> {item.metrics.integrationEcosystem.aws}
+                        <strong>{cloudUi.awsShortBadge}:</strong> {item.metrics.integrationEcosystem.aws}
                       </div>
                       <div className="text-sky-400 font-mono text-[11px]">
-                        <strong>Azure:</strong> {item.metrics.integrationEcosystem.azure}
+                        <strong>{cloudUi.azureShortBadge}:</strong> {item.metrics.integrationEcosystem.azure}
                       </div>
                     </div>
                   </div>
@@ -421,18 +422,18 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                 <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 border border-slate-800 space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-white font-mono uppercase">
                     <Award size={14} className="text-amber-400" />
-                    <span>Parecer Arquitetural do Especialista</span>
+                    <span>{cloudUi.deepDiveLabel}</span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                     {item.deepDiveAnalysis}
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 text-xs">
                     <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-slate-300">
-                      <strong className="text-amber-400 block mb-1">Quando escolher AWS:</strong>
+                      <strong className="text-amber-400 block mb-1">{cloudUi.whenAwsLabel}</strong>
                       {item.verdict.recommendedWhenAWS}
                     </div>
                     <div className="p-3 rounded-xl bg-sky-500/5 border border-sky-500/20 text-slate-300">
-                      <strong className="text-sky-400 block mb-1">Quando escolher Azure:</strong>
+                      <strong className="text-sky-400 block mb-1">{cloudUi.whenAzureLabel}</strong>
                       {item.verdict.recommendedWhenAzure}
                     </div>
                   </div>
@@ -444,24 +445,24 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
       )}
 
       {/* SEÇÃO 2: SIMULADOR DE ARQUITETURAS & WORKLOADS REAIS */}
-      {(selectedCategory === 'all' || selectedCategory === 'scenarios') && (
+      {(selectedCategory === 'all' || selectedCategory === 'scenarios') && activeScenario && (
         <section className="space-y-6">
           <div className="border-b border-slate-800 pb-4">
             <span className="text-xs font-mono uppercase tracking-wider font-bold text-cyan-400 flex items-center gap-2">
               <Sliders size={14} />
-              FERRAMENTA PRÁTICA
+              {cloudUi.simulatorBadge}
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">
-              Simulador de Arquiteturas: AWS vs Azure por Cenário
+              {cloudUi.simulatorTitle}
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Selecione o perfil do seu workload de software para comparar o mapeamento de serviços, topologia de rede, esteira de CI/CD e estimativa de custos.
+              {cloudUi.simulatorSubtitle}
             </p>
           </div>
 
           {/* Seletor de Cenários */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {CLOUD_SCENARIOS.map((scenario) => {
+            {cloudScenarios.map((scenario) => {
               const isSelected = scenario.id === activeScenarioId;
               return (
                 <button
@@ -485,7 +486,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                     </p>
                   </div>
                   <div className="pt-3 mt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-cyan-400">
-                    <span>{isSelected ? 'Cenário Ativo' : 'Simular Stack'}</span>
+                    <span>{isSelected ? cloudUi.activeScenarioLabel : cloudUi.simulateStackLabel}</span>
                     <ArrowRight size={13} className={isSelected ? 'translate-x-1' : ''} />
                   </div>
                 </button>
@@ -530,7 +531,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                 <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
                   <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full bg-amber-400" />
-                    <h4 className="font-bold text-base text-amber-300">Pilha Recomendada na AWS</h4>
+                    <h4 className="font-bold text-base text-amber-300">{cloudUi.awsStackHeader}</h4>
                   </div>
                   <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
                     {activeScenario.awsStack.estimatedCostTier}
@@ -539,29 +540,29 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
 
                 <div className="space-y-2.5 text-xs">
                   <div>
-                    <span className="text-slate-400 font-mono block text-[11px]">Computação Principal:</span>
+                    <span className="text-slate-400 font-mono block text-[11px]">{cloudUi.computeLabel}</span>
                     <strong className="text-white">{activeScenario.awsStack.compute}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-mono block text-[11px]">Armazenamento & Dados:</span>
+                    <span className="text-slate-400 font-mono block text-[11px]">{cloudUi.storageLabel}</span>
                     <span className="text-slate-300">{activeScenario.awsStack.storage}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-mono block text-[11px]">Automação CI / CD:</span>
+                    <span className="text-slate-400 font-mono block text-[11px]">{cloudUi.cicdLabel}</span>
                     <span className="text-slate-300">{activeScenario.awsStack.cicd}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-mono block text-[11px]">Computação Serverless (Functions):</span>
+                    <span className="text-slate-400 font-mono block text-[11px]">{cloudUi.functionsLabel}</span>
                     <span className="text-slate-300">{activeScenario.awsStack.functions}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-mono block text-[11px]">Topologia de Rede & Segurança:</span>
+                    <span className="text-slate-400 font-mono block text-[11px]">{cloudUi.networkingLabel}</span>
                     <span className="text-slate-300">{activeScenario.awsStack.networking}</span>
                   </div>
                 </div>
 
                 <div className="pt-3 border-t border-slate-800 text-xs text-slate-400 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <strong className="text-amber-400 block mb-1">Notas de Engenharia (AWS):</strong>
+                  <strong className="text-amber-400 block mb-1">{cloudUi.awsNotesLabel}</strong>
                   {activeScenario.awsStack.architectureNotes}
                 </div>
               </div>
@@ -571,7 +572,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                 <div className="flex items-center justify-between border-b border-sky-500/20 pb-3">
                   <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full bg-sky-400" />
-                    <h4 className="font-bold text-base text-sky-300">Pilha Recomendada no Azure</h4>
+                    <h4 className="font-bold text-base text-sky-300">{cloudUi.azureStackHeader}</h4>
                   </div>
                   <span className="text-xs font-mono font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">
                     {activeScenario.azureStack.estimatedCostTier}
@@ -580,29 +581,29 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
 
                 <div className="space-y-2.5 text-xs">
                   <div>
-                    <span className="text-slate-400 font-mono block text-[11px]">Computação Principal:</span>
+                    <span className="text-slate-400 font-mono block text-[11px]">{cloudUi.computeLabel}</span>
                     <strong className="text-white">{activeScenario.azureStack.compute}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-mono block text-[11px]">Armazenamento & Dados:</span>
+                    <span className="text-slate-400 font-mono block text-[11px]">{cloudUi.storageLabel}</span>
                     <span className="text-slate-300">{activeScenario.azureStack.storage}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-mono block text-[11px]">Automação CI / CD:</span>
+                    <span className="text-slate-400 font-mono block text-[11px]">{cloudUi.cicdLabel}</span>
                     <span className="text-slate-300">{activeScenario.azureStack.cicd}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-mono block text-[11px]">Computação Serverless (Functions):</span>
+                    <span className="text-slate-400 font-mono block text-[11px]">{cloudUi.functionsLabel}</span>
                     <span className="text-slate-300">{activeScenario.azureStack.functions}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-mono block text-[11px]">Topologia de Rede & Segurança:</span>
+                    <span className="text-slate-400 font-mono block text-[11px]">{cloudUi.networkingLabel}</span>
                     <span className="text-slate-300">{activeScenario.azureStack.networking}</span>
                   </div>
                 </div>
 
                 <div className="pt-3 border-t border-slate-800 text-xs text-slate-400 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <strong className="text-sky-400 block mb-1">Notas de Engenharia (Azure):</strong>
+                  <strong className="text-sky-400 block mb-1">{cloudUi.azureNotesLabel}</strong>
                   {activeScenario.azureStack.architectureNotes}
                 </div>
               </div>
@@ -611,7 +612,7 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
             {/* Racional de Decisão */}
             <div className="p-5 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 text-xs sm:text-sm text-cyan-200 leading-relaxed">
               <strong className="text-cyan-400 block font-mono uppercase text-xs mb-1">
-                Conclusão de Arquitetura para este Cenário:
+                {cloudUi.rationaleTitle}
               </strong>
               {activeScenario.decisionRationale}
             </div>
@@ -622,59 +623,31 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
       {/* QUADRO DE RESUMO EXECUTIVO (MATRIZ RÁPIDA) */}
       <section className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 space-y-6">
         <h3 className="text-xl sm:text-2xl font-black text-white">
-          Tabela Canônica de De-Para de Serviços (AWS ➔ Azure)
+          {cloudUi.mappingTable.title}
         </h3>
         <p className="text-xs sm:text-sm text-slate-400">
-          Referência rápida para engenheiros migrando ou operando em estratégias multi-cloud.
+          {cloudUi.mappingTable.subtitle}
         </p>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-slate-800 text-slate-400 font-mono uppercase text-[11px]">
-                <th className="py-3 px-4">Domínio Arquitetural</th>
-                <th className="py-3 px-4 text-amber-400">Serviço AWS</th>
-                <th className="py-3 px-4 text-sky-400">Serviço Azure Equivalente</th>
-                <th className="py-3 px-4">Diferencial Crítico</th>
+                <th className="py-3 px-4">{cloudUi.mappingTable.colDomain}</th>
+                <th className="py-3 px-4 text-amber-400">{cloudUi.mappingTable.colAws}</th>
+                <th className="py-3 px-4 text-sky-400">{cloudUi.mappingTable.colAzure}</th>
+                <th className="py-3 px-4">{cloudUi.mappingTable.colDiff}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-slate-300">
-              <tr>
-                <td className="py-3 px-4 font-bold text-white">Object Storage</td>
-                <td className="py-3 px-4 font-mono text-amber-300">Amazon S3</td>
-                <td className="py-3 px-4 font-mono text-sky-300">Azure Blob Storage</td>
-                <td className="py-3 px-4">S3 tem Intelligent-Tiering automatizado; Azure Blob possui namespace hierárquico (ADLSv2).</td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 font-bold text-white">Block Storage (Discos)</td>
-                <td className="py-3 px-4 font-mono text-amber-300">EBS gp3 / io2</td>
-                <td className="py-3 px-4 font-mono text-sky-300">Premium SSD v2 / Ultra Disk</td>
-                <td className="py-3 px-4">Ambos desacoplam IOPS de capacidade; Azure suporta ZRS e Shared Disks para clusters.</td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 font-bold text-white">PaaS Web Hosting</td>
-                <td className="py-3 px-4 font-mono text-amber-300">AWS App Runner</td>
-                <td className="py-3 px-4 font-mono text-sky-300">Azure App Service</td>
-                <td className="py-3 px-4">Azure App Service possui Deployment Slots com zero downtime e integração híbrida superior.</td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 font-bold text-white">Serverless Containers</td>
-                <td className="py-3 px-4 font-mono text-amber-300">AWS ECS Fargate</td>
-                <td className="py-3 px-4 font-mono text-sky-300">Azure Container Apps (ACA)</td>
-                <td className="py-3 px-4">Azure Container Apps escala para 0 réplicas (zero custo) com KEDA nativo; ECS Fargate tem mínima de 1 task.</td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 font-bold text-white">Pipelines de CI / CD</td>
-                <td className="py-3 px-4 font-mono text-amber-300">CodePipeline & CodeBuild</td>
-                <td className="py-3 px-4 font-mono text-sky-300">GitHub Actions & Azure DevOps</td>
-                <td className="py-3 px-4">GitHub Actions é o padrão da indústria com marketplace gigante e OIDC passwordless.</td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 font-bold text-white">Serverless Functions</td>
-                <td className="py-3 px-4 font-mono text-amber-300">AWS Lambda</td>
-                <td className="py-3 px-4 font-mono text-sky-300">Azure Functions</td>
-                <td className="py-3 px-4">Lambda escala instantaneamente com microVM Firecracker; Azure Functions brilha com Durable Functions e bindings declarativos.</td>
-              </tr>
+              {cloudUi.mappingTable.rows.map((row) => (
+                <tr key={row.domain}>
+                  <td className="py-3 px-4 font-bold text-white">{row.domain}</td>
+                  <td className="py-3 px-4 font-mono text-amber-300">{row.aws}</td>
+                  <td className="py-3 px-4 font-mono text-sky-300">{row.azure}</td>
+                  <td className="py-3 px-4">{row.diff}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -685,13 +658,13 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
         <div className="space-y-2 max-w-xl">
           <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full">
             <Layers size={14} />
-            <span>Aprofunde sua Arquitetura</span>
+            <span>{cloudUi.ctaBadge}</span>
           </div>
           <h3 className="text-xl sm:text-2xl font-black text-white">
-            Planejando migração ou estimando prazos de entrega?
+            {cloudUi.ctaDecisionTitle}
           </h3>
           <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-            Utilize nossa <strong>Matriz de Decisão Arquitetural</strong> para obter recomendações de stack e a <strong>Análise de Pontos de Função (APF)</strong> para orçar horas de desenvolvimento e esforço da equipe.
+            {cloudUi.ctaDecisionDesc}
           </p>
         </div>
 
@@ -702,14 +675,14 @@ export const CloudView: React.FC<CloudViewProps> = ({ onNavigateToPage }) => {
                 onClick={() => onNavigateToPage('decision-matrix')}
                 className="px-5 py-3 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition-all cursor-pointer flex items-center gap-2"
               >
-                <span>Matriz de Decisão</span>
+                <span>{cloudUi.ctaDecisionBtn}</span>
                 <ArrowRight size={14} />
               </button>
               <button
                 onClick={() => onNavigateToPage('function-points')}
                 className="px-5 py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/25 transition-all cursor-pointer flex items-center gap-2"
               >
-                <span>Pontos de Função (APF)</span>
+                <span>{cloudUi.ctaBusinessBtn}</span>
                 <ArrowRight size={14} />
               </button>
             </>

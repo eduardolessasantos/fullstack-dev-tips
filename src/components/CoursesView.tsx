@@ -16,12 +16,11 @@ import {
   Calendar,
   Layers,
   Sparkles,
-  ShieldCheck,
   ChevronRight,
   Filter
 } from 'lucide-react';
-import { FORMATIONS_DATA } from '../data/coursesData.ts';
-import { Formation, FormationCategory, FormationLevel, PageId } from '../types.ts';
+import { Formation, FormationCategory, PageId } from '../types.ts';
+import { useLanguage, useTranslationNamespace } from '../i18n/LanguageContext';
 
 interface CoursesViewProps {
   onNavigateToPage?: (page: PageId, subTab?: string) => void;
@@ -32,15 +31,19 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
   onNavigateToPage,
   onNavigateToArticle
 }) => {
+  const { t } = useLanguage();
+  const { data: cloudCourses } = useTranslationNamespace('cloudCourses');
   const [selectedCategory, setSelectedCategory] = useState<FormationCategory>('all');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModalFormation, setActiveModalFormation] = useState<Formation | null>(null);
   const [modalActiveTab, setModalActiveTab] = useState<'syllabus' | 'exam' | 'roadmap'>('syllabus');
 
+  const formations = cloudCourses?.formations ?? [];
+
   // Filtragem combinada
   const filteredFormations = useMemo(() => {
-    return FORMATIONS_DATA.filter((item) => {
+    return formations.filter((item) => {
       // Filtro de Categoria
       if (selectedCategory === 'certifications') {
         if (!item.examCode && item.category !== 'certifications') return false;
@@ -60,7 +63,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
         const inSubtitle = item.subtitle.toLowerCase().includes(query);
         const inDesc = item.description.toLowerCase().includes(query);
         const inExam = item.examCode?.toLowerCase().includes(query);
-        const inTech = item.technologies.some((t) => t.toLowerCase().includes(query));
+        const inTech = item.technologies.some((tech) => tech.toLowerCase().includes(query));
         const inProvider = item.provider.toLowerCase().includes(query);
 
         if (!inTitle && !inSubtitle && !inDesc && !inExam && !inTech && !inProvider) {
@@ -70,12 +73,23 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
 
       return true;
     });
-  }, [selectedCategory, selectedLevel, searchQuery]);
+  }, [formations, selectedCategory, selectedLevel, searchQuery]);
 
   // Contagem por categoria
   const certificationsCount = useMemo(() => {
-    return FORMATIONS_DATA.filter((f) => !!f.examCode || f.category === 'certifications').length;
-  }, []);
+    return formations.filter((f) => !!f.examCode || f.category === 'certifications').length;
+  }, [formations]);
+
+  if (!cloudCourses) {
+    return (
+      <div className="py-20 text-center text-sm text-slate-400 animate-pulse">
+        {t.common.loadingTranslation}
+      </div>
+    );
+  }
+
+  const { coursesUi } = cloudCourses;
+  const catLabel = (id: string) => coursesUi.categories.find((c) => c.id === id)?.label ?? id;
 
   const openModal = (formation: Formation) => {
     setActiveModalFormation(formation);
@@ -98,31 +112,29 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
         <div className="relative z-10 max-w-4xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
             <GraduationCap size={15} />
-            <span>Educação Pragmática & Certificações Globais</span>
+            <span>{coursesUi.headerBadge}</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-            Vitrine de Formações & Preparatórios
+            {coursesUi.headerTitle}
           </h1>
 
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl">
-            Roteiros de especialização técnica estruturados para elevar sua carreira de desenvolvedor. 
-            Domine as tecnologias abordadas no <strong>CodeCompare</strong> e prepare-se com rigor para as principais 
-            certificações oficiais de <strong>AWS</strong>, <strong>Microsoft Azure</strong> e <strong>DevOps</strong>.
+            {coursesUi.headerSubtitle}
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-mono text-slate-400">
             <div className="flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800">
               <Award size={14} className="text-amber-400" />
-              <span>{certificationsCount} Exames Oficiais Mapeados</span>
+              <span>{certificationsCount} {coursesUi.statExams} {coursesUi.statExamsSuffix}</span>
             </div>
             <div className="flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800">
               <CheckCircle2 size={14} className="text-emerald-400" />
-              <span>100% Alinhado às Práticas de Mercado</span>
+              <span>{coursesUi.statAligned}</span>
             </div>
             <div className="flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800">
               <Sparkles size={14} className="text-cyan-400" />
-              <span>Planos de Estudo Semanais Inclusos</span>
+              <span>{coursesUi.statWeeklyPlans}</span>
             </div>
           </div>
         </div>
@@ -140,7 +152,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por tecnologia (.NET, AWS, Azure, Python, React, SAA-C03, AZ-204)..."
+              placeholder={coursesUi.searchPlaceholder}
               className="w-full pl-10 pr-10 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 focus:border-cyan-500 text-sm text-white placeholder-slate-500 outline-none transition-all shadow-inner"
             />
             {searchQuery && (
@@ -155,17 +167,18 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
 
           <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-2xl">
             <Filter size={15} className="text-slate-400" />
-            <span className="text-xs font-mono text-slate-400">Nível:</span>
+            <span className="text-xs font-mono text-slate-400">{coursesUi.levelFilterLabel}</span>
             <select
               value={selectedLevel}
               onChange={(e) => setSelectedLevel(e.target.value)}
               className="bg-transparent text-xs text-white font-medium outline-none cursor-pointer pr-2"
             >
-              <option value="all" className="bg-slate-900">Todos os Níveis</option>
-              <option value="Iniciante" className="bg-slate-900">Iniciante</option>
-              <option value="Intermediário" className="bg-slate-900">Intermediário</option>
-              <option value="Avançado" className="bg-slate-900">Avançado</option>
-              <option value="Especialista" className="bg-slate-900">Especialista</option>
+              <option value="all" className="bg-slate-900">{coursesUi.levelAll}</option>
+              {coursesUi.levels.map((lvl) => (
+                <option key={lvl.id} value={lvl.id} className="bg-slate-900">
+                  {lvl.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -181,7 +194,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
             }`}
           >
             <GraduationCap size={14} />
-            <span>Todas as Formações ({FORMATIONS_DATA.length})</span>
+            <span>{catLabel('all')} ({formations.length})</span>
           </button>
 
           <button
@@ -193,7 +206,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
             }`}
           >
             <Award size={14} />
-            <span>Certificações Oficiais (AWS / Azure) ({certificationsCount})</span>
+            <span>{catLabel('certifications')} ({certificationsCount})</span>
           </button>
 
           <button
@@ -205,7 +218,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
             }`}
           >
             <Server size={14} />
-            <span>Backend & Microsserviços</span>
+            <span>{catLabel('backend')}</span>
           </button>
 
           <button
@@ -217,7 +230,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
             }`}
           >
             <Code2 size={14} />
-            <span>Frontend Moderno</span>
+            <span>{catLabel('frontend')}</span>
           </button>
 
           <button
@@ -229,7 +242,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
             }`}
           >
             <Cloud size={14} />
-            <span>Cloud & DevOps</span>
+            <span>{catLabel('cloud')}</span>
           </button>
 
           <button
@@ -241,7 +254,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
             }`}
           >
             <Database size={14} />
-            <span>Dados & Arquitetura</span>
+            <span>{catLabel('architecture')}</span>
           </button>
         </div>
       </div>
@@ -252,7 +265,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
       {filteredFormations.length === 0 ? (
         <div className="p-12 text-center rounded-2xl border border-slate-800 bg-slate-900/50 space-y-3">
           <p className="text-slate-400 text-sm">
-            Nenhuma formação encontrada para o termo <strong>"{searchQuery}"</strong>.
+            {coursesUi.emptyDescBefore} <strong>"{searchQuery}"</strong>. {coursesUi.emptyDescAfter}
           </p>
           <button
             onClick={() => {
@@ -262,14 +275,12 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
             }}
             className="text-xs font-bold text-cyan-400 hover:underline cursor-pointer"
           >
-            Limpar todos os filtros
+            {coursesUi.clearFilters}
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredFormations.map((formation) => {
-            const isCert = !!formation.examCode;
-
             return (
               <div
                 key={formation.id}
@@ -303,7 +314,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
 
                     <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
                       <span className="px-2 py-0.5 rounded bg-slate-800/60 border border-slate-700/50">
-                        {formation.level}
+                        {coursesUi.levelMap[formation.level] ?? formation.level}
                       </span>
                     </div>
                   </div>
@@ -326,14 +337,14 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Layers size={13} className="text-purple-400" />
-                      <span>{formation.modules.length} Módulos</span>
+                      <span>{formation.modules.length} {coursesUi.modulesUnit}</span>
                     </div>
                   </div>
 
                   {/* Tecnologias Abordadas */}
                   <div>
                     <span className="text-[10px] font-mono uppercase font-bold text-slate-500 block mb-1.5">
-                      Stack / Tecnologias Envolvidas:
+                      {coursesUi.techStackLabel}
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {formation.technologies.slice(0, 6).map((tech, idx) => (
@@ -369,7 +380,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                     onClick={() => openModal(formation)}
                     className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-cyan-500/10 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 border border-cyan-500/30 hover:border-cyan-500 transition-all cursor-pointer flex items-center justify-center gap-2 group/btn"
                   >
-                    <span>Ver Grade Curricular & Roteiro</span>
+                    <span>{coursesUi.viewCurriculumBtn}</span>
                     <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                   </button>
 
@@ -379,10 +390,10 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                       <button
                         onClick={() => onNavigateToArticle(formation.relatedArticleId!)}
                         className="flex-1 py-1.5 px-3 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                        title="Ler artigo técnico aprofundado sobre este tema"
+                        title={coursesUi.relatedArticleTitleAttr}
                       >
                         <BookOpen size={12} className="text-purple-400" />
-                        <span>Artigo Relacionado</span>
+                        <span>{coursesUi.relatedArticleBtn}</span>
                       </button>
                     )}
 
@@ -390,10 +401,10 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                       <button
                         onClick={() => onNavigateToPage(formation.relatedPageId!, formation.relatedTab)}
                         className="flex-1 py-1.5 px-3 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                        title="Ver comparativo prático no portal"
+                        title={coursesUi.relatedPageTitleAttr}
                       >
                         <ArrowRight size={12} className="text-cyan-400" />
-                        <span>Testar no Comparador</span>
+                        <span>{coursesUi.relatedCloudBtn}</span>
                       </button>
                     )}
                   </div>
@@ -421,11 +432,11 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                     {activeModalFormation.examCode && (
                       <span className="text-[10px] font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded flex items-center gap-1">
                         <Award size={11} />
-                        <span>Exame Oficial {activeModalFormation.examCode}</span>
+                        <span>{coursesUi.badgeExamPrefix} {activeModalFormation.examCode}</span>
                       </span>
                     )}
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">
-                      {activeModalFormation.level}
+                      {coursesUi.levelMap[activeModalFormation.level] ?? activeModalFormation.level}
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">
                       {activeModalFormation.duration}
@@ -459,7 +470,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                   }`}
                 >
                   <Layers size={13} />
-                  <span>Grade Curricular ({activeModalFormation.modules.length} Módulos)</span>
+                  <span>{coursesUi.syllabusTab} ({activeModalFormation.modules.length} {coursesUi.modulesUnit})</span>
                 </button>
 
                 {activeModalFormation.examDomains && activeModalFormation.examDomains.length > 0 && (
@@ -472,7 +483,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                     }`}
                   >
                     <Award size={13} />
-                    <span>Domínios & Pesos da Prova</span>
+                    <span>{coursesUi.examTab}</span>
                   </button>
                 )}
 
@@ -486,7 +497,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                     }`}
                   >
                     <Calendar size={13} />
-                    <span>Roteiro Semana a Semana</span>
+                    <span>{coursesUi.roadmapTab}</span>
                   </button>
                 )}
               </div>
@@ -497,11 +508,11 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
               {/* VISÃO GERAL: PRÉ-REQUISITOS E PÚBLICO */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs">
                 <div>
-                  <strong className="text-white block mb-1">Público-Alvo:</strong>
+                  <strong className="text-white block mb-1">{coursesUi.targetAudienceLabel}</strong>
                   <p className="text-slate-400">{activeModalFormation.targetAudience}</p>
                 </div>
                 <div>
-                  <strong className="text-white block mb-1">Pré-Requisitos Sugeridos:</strong>
+                  <strong className="text-white block mb-1">{coursesUi.prerequisitesLabel}</strong>
                   <ul className="text-slate-400 space-y-1 list-disc pl-4">
                     {activeModalFormation.prerequisites.map((p, i) => (
                       <li key={i}>{p}</li>
@@ -515,7 +526,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                 <div className="space-y-4">
                   <h4 className="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
                     <Layers size={15} className="text-cyan-400" />
-                    <span>Módulos de Formação Prática</span>
+                    <span>{coursesUi.modulesTitle}</span>
                   </h4>
 
                   <div className="space-y-4">
@@ -555,7 +566,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                   <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/20 text-xs text-amber-200 flex items-start gap-2.5">
                     <Award size={18} className="text-amber-400 shrink-0 mt-0.5" />
                     <div>
-                      <strong>Blueprint Oficial do Exame ({activeModalFormation.examCode}):</strong> Os tópicos da prova são distribuídos de acordo com os pesos percentuais abaixo. Foque seu tempo de estudo de forma proporcional aos domínios com maior peso.
+                      <strong>{coursesUi.examBlueprintPrefix} ({activeModalFormation.examCode}):</strong> {coursesUi.examBlueprintDesc}
                     </div>
                   </div>
 
@@ -584,7 +595,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 underline"
                       >
-                        <span>Acessar Guia Oficial de Preparação e Agendamento do Exame</span>
+                        <span>{coursesUi.officialGuideLinkLabel}</span>
                         <ExternalLink size={13} />
                       </a>
                     </div>
@@ -597,7 +608,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                 <div className="space-y-4">
                   <h4 className="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
                     <Calendar size={15} className="text-purple-400" />
-                    <span>Cronograma Sugerido de Estudos</span>
+                    <span>{coursesUi.weeklyPlanTitle}</span>
                   </h4>
 
                   <div className="space-y-3">
@@ -623,13 +634,13 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
             {/* Modal Footer */}
             <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex flex-wrap items-center justify-between gap-3">
               <div className="text-xs text-slate-500">
-                Material com curadoria autoral de engenharia do portal CodeCompare.
+                {coursesUi.modalFooterAttribution}
               </div>
               <button
                 onClick={closeModal}
                 className="px-5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white transition-colors cursor-pointer"
               >
-                Fechar Detalhes
+                {coursesUi.closeModalBtn}
               </button>
             </div>
           </div>

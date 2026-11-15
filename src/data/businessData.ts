@@ -8,6 +8,7 @@ import {
   BusinessAssessmentResult,
   CostBreakdownItem
 } from '../types.ts';
+import type { BusinessLocale } from '../i18n/types.ts';
 
 export const ECONOMIC_SECTORS: Record<EconomicSectorId, EconomicSector> = {
   retail: {
@@ -346,79 +347,76 @@ export const PROJECT_GOALS: Record<ProjectPrimaryGoal, {
   }
 };
 
-export function calculateBusinessAssessment(input: BusinessAssessmentInput): BusinessAssessmentResult {
-  const sector = ECONOMIC_SECTORS[input.sectorId] || ECONOMIC_SECTORS.retail;
-  const sizeConfig = COMPANY_SIZES[input.companySize] || COMPANY_SIZES.small;
-  const maturityConfig = MATURITY_LEVELS[input.maturityLevel] || MATURITY_LEVELS.spreadsheets;
-  const goalConfig = PROJECT_GOALS[input.primaryGoal] || PROJECT_GOALS.process_automation;
+export function calculateBusinessAssessment(
+  input: BusinessAssessmentInput,
+  locale?: BusinessLocale
+): BusinessAssessmentResult {
+  const sectorsMap = locale?.sectors ?? ECONOMIC_SECTORS;
+  const sizesMap = locale?.companySizes ?? COMPANY_SIZES;
+  const maturityMap = locale?.maturityLevels ?? MATURITY_LEVELS;
+  const goalsMap = locale?.projectGoals ?? PROJECT_GOALS;
+  const tpl = locale?.assessmentTemplates;
 
-  // Cálculo de Capex (Investimento de Desenvolvimento)
+  const sector = sectorsMap[input.sectorId] || sectorsMap.retail;
+  const sizeConfig = sizesMap[input.companySize] || sizesMap.small;
+  const maturityConfig = maturityMap[input.maturityLevel] || maturityMap.spreadsheets;
+  const goalConfig = goalsMap[input.primaryGoal] || goalsMap.process_automation;
+
   const baseCost = goalConfig.baseCapex;
   const combinedMultiplier = sizeConfig.costMultiplier * maturityConfig.complexityFactor;
   const calculatedCapex = baseCost * combinedMultiplier;
 
-  // Faixa de tolerância de mercado (-10% a +25%)
   const capexMin = Math.round((calculatedCapex * 0.9) / 500) * 500;
   const capexMax = Math.round((calculatedCapex * 1.25) / 500) * 500;
 
-  // Cálculo de Opex Mensal (Cloud + Ferramentas)
   const baseOpex = goalConfig.baseOpexMonthly * sizeConfig.costMultiplier;
   const opexMonthlyMin = Math.round((baseOpex * 0.85) / 50) * 50;
   const opexMonthlyMax = Math.round((baseOpex * 1.3) / 50) * 50;
 
-  // Prazos e Cronograma
-  const rawWeeks = goalConfig.baseWeeks * sizeConfig.timeMultiplier * (maturityConfig.complexityFactor > 1.2 ? 1.15 : 1.0);
+  const rawWeeks =
+    goalConfig.baseWeeks *
+    sizeConfig.timeMultiplier *
+    (maturityConfig.complexityFactor > 1.2 ? 1.15 : 1.0);
   const timelineWeeksMin = Math.max(4, Math.round(rawWeeks * 0.85));
   const timelineWeeksMax = Math.max(timelineWeeksMin + 2, Math.round(rawWeeks * 1.2));
   const sprintsCount = Math.ceil(timelineWeeksMax / 2);
 
-  // Breakdown detalhado de custos e horas
-  const totalHours = Math.round((capexMin + capexMax) / 2 / 120); // Média de R$ 120/hora homem
-  const costBreakdown: CostBreakdownItem[] = [
+  const totalHours = Math.round((capexMin + capexMax) / 2 / 120);
+  const pcts = [0.15, 0.35, 0.25, 0.15, 0.1] as const;
+  const defaultBreakdown = [
     {
       category: 'Arquitetura de Software & Design de Banco',
-      hours: Math.round(totalHours * 0.15),
-      percentage: 15,
-      estimatedCostMin: Math.round(capexMin * 0.15),
-      estimatedCostMax: Math.round(capexMax * 0.15),
       description: 'Modelagem relacional, definições de segurança, infraestrutura como código (IaC) e fluxogramas.'
     },
     {
       category: 'Desenvolvimento Backend & APIs de Integração',
-      hours: Math.round(totalHours * 0.35),
-      percentage: 35,
-      estimatedCostMin: Math.round(capexMin * 0.35),
-      estimatedCostMax: Math.round(capexMax * 0.35),
       description: 'Regras de negócio, autenticação, integrações com sistemas externos e barramentos assíncronos.'
     },
     {
       category: 'Desenvolvimento Frontend & Interface de Usuário (UI/UX)',
-      hours: Math.round(totalHours * 0.25),
-      percentage: 25,
-      estimatedCostMin: Math.round(capexMin * 0.25),
-      estimatedCostMax: Math.round(capexMax * 0.25),
       description: 'Construção dos layouts responsivos, componentes interativos, validação de formulários e dashboards.'
     },
     {
       category: 'Garantia de Qualidade (QA) & Testes Automatizados',
-      hours: Math.round(totalHours * 0.15),
-      percentage: 15,
-      estimatedCostMin: Math.round(capexMin * 0.15),
-      estimatedCostMax: Math.round(capexMax * 0.15),
       description: 'Testes de carga, testes unitários, testes de regressão e homologação de cenários reais.'
     },
     {
       category: 'DevOps, Deploy Automatizado & Treinamento de Equipe',
-      hours: Math.round(totalHours * 0.10),
-      percentage: 10,
-      estimatedCostMin: Math.round(capexMin * 0.10),
-      estimatedCostMax: Math.round(capexMax * 0.10),
       description: 'Configuração de pipelines CI/CD, monitoramento de métricas, alertas e workshops operacionais.'
     }
   ];
 
-  // Composição do Squad
-  const recommendedSquad = [
+  const breakdownSrc = tpl?.costBreakdown ?? defaultBreakdown;
+  const costBreakdown: CostBreakdownItem[] = pcts.map((pct, i) => ({
+    category: breakdownSrc[i]?.category ?? defaultBreakdown[i].category,
+    hours: Math.round(totalHours * pct),
+    percentage: Math.round(pct * 100),
+    estimatedCostMin: Math.round(capexMin * pct),
+    estimatedCostMax: Math.round(capexMax * pct),
+    description: breakdownSrc[i]?.description ?? defaultBreakdown[i].description
+  }));
+
+  const defaultSquad = [
     { role: 'Tech Lead / Arquiteto de Software', count: 1, allocation: 'Parcial (20h/semana)' },
     { role: 'Desenvolvedor Backend Sênior', count: input.companySize === 'corporate' ? 2 : 1, allocation: 'Integral (40h/semana)' },
     { role: 'Desenvolvedor Frontend / UI Specialist', count: 1, allocation: 'Integral (40h/semana)' },
@@ -426,11 +424,30 @@ export function calculateBusinessAssessment(input: BusinessAssessmentInput): Bus
     { role: 'Analista de Qualidade e Homologação', count: 1, allocation: 'Fase final (20h/semana)' }
   ];
 
-  // Simulação de Nuvem por Porte
+  const recommendedSquad = tpl?.squad
+    ? [
+        { role: tpl.squad[0].role, count: 1, allocation: tpl.squad[0].allocationPartial },
+        { role: tpl.squad[1].role, count: input.companySize === 'corporate' ? 2 : 1, allocation: tpl.squad[1].allocationFull },
+        { role: tpl.squad[2].role, count: 1, allocation: tpl.squad[2].allocationFull },
+        { role: tpl.squad[3].role, count: 1, allocation: tpl.squad[3].allocationPunctual },
+        { role: tpl.squad[4].role, count: 1, allocation: tpl.squad[4].allocationFinal }
+      ]
+    : defaultSquad;
+
   const cloudSimulation = {
     provider: sector.recommendedCloud.split(' ')[0] || 'AWS',
-    tier: input.companySize === 'micro' ? 'Nível Entrada (Basic Tier)' : input.companySize === 'small' ? 'Nível Padrão (Standard Tier)' : 'Nível Enterprise (Multi-AZ)',
-    services: [
+    tier: tpl
+      ? input.companySize === 'micro'
+        ? tpl.cloudTiers.micro
+        : input.companySize === 'small'
+        ? tpl.cloudTiers.small
+        : tpl.cloudTiers.enterprise
+      : input.companySize === 'micro'
+      ? 'Nível Entrada (Basic Tier)'
+      : input.companySize === 'small'
+      ? 'Nível Padrão (Standard Tier)'
+      : 'Nível Enterprise (Multi-AZ)',
+    services: tpl?.cloudServices ?? [
       'Contêineres Gerenciados com Auto-Scaling',
       'Banco de Dados Relacional Gerenciado com Backup Diário',
       'Camada de Cache em Memória (Redis)',
@@ -440,63 +457,103 @@ export function calculateBusinessAssessment(input: BusinessAssessmentInput): Bus
     estimatedMonthlyBrl: Math.round((opexMonthlyMin + opexMonthlyMax) / 2)
   };
 
-  // Fases de Rollout
-  const rolloutPhases = [
-    {
-      phase: 'Fase 1: Fundação & Protótipo Funcional (MVP)',
-      duration: `Semanas 1 a ${Math.max(2, Math.round(timelineWeeksMax * 0.35))}`,
-      deliverables: [
-        'Ambiente de Cloud configurado com CI/CD automatizado',
-        'Modelagem do banco de dados e autenticação segura',
-        'Telas essenciais do fluxo principal validadas com os usuários chave'
-      ]
-    },
-    {
-      phase: 'Fase 2: Integração de Negócio & Migração de Dados',
-      duration: `Semanas ${Math.round(timelineWeeksMax * 0.35) + 1} a ${Math.round(timelineWeeksMax * 0.75)}`,
-      deliverables: [
-        'Migração e saneamento dos dados anteriores (planilhas ou legado)',
-        'Conexão com APIs externas (pagamento, emissão fiscal ou mensageria)',
-        'Validação das regras de negócio complexas do nicho'
-      ]
-    },
-    {
-      phase: 'Fase 3: Homologação, Treinamento & Go-Live Seguro',
-      duration: `Semanas ${Math.round(timelineWeeksMax * 0.75) + 1} a ${timelineWeeksMax}`,
-      deliverables: [
-        'Testes de carga simulando picos operacionais de acesso',
-        'Treinamento prático da equipe com manuais e vídeos gravados',
-        'Virada de chave assistida (Go-Live) com suporte presencial/remoto de plantão'
-      ]
-    }
-  ];
+  const w1End = Math.max(2, Math.round(timelineWeeksMax * 0.35));
+  const w2Start = Math.round(timelineWeeksMax * 0.35) + 1;
+  const w2End = Math.round(timelineWeeksMax * 0.75);
+  const w3Start = w2End + 1;
 
-  // Riscos Estratégicos Específicos
-  const strategicRisks = [
+  const rolloutPhases = tpl?.rolloutPhases
+    ? [
+        {
+          phase: tpl.rolloutPhases[0].phase,
+          duration: `${tpl.rolloutPhases[0].durationPrefix} 1 ${tpl.rolloutPhases[0].durationJoin} ${w1End}`,
+          deliverables: tpl.rolloutPhases[0].deliverables
+        },
+        {
+          phase: tpl.rolloutPhases[1].phase,
+          duration: `${tpl.rolloutPhases[1].durationPrefix} ${w2Start} ${tpl.rolloutPhases[1].durationJoin} ${w2End}`,
+          deliverables: tpl.rolloutPhases[1].deliverables
+        },
+        {
+          phase: tpl.rolloutPhases[2].phase,
+          duration: `${tpl.rolloutPhases[2].durationPrefix} ${w3Start} ${tpl.rolloutPhases[2].durationJoin} ${timelineWeeksMax}`,
+          deliverables: tpl.rolloutPhases[2].deliverables
+        }
+      ]
+    : [
+        {
+          phase: 'Fase 1: Fundação & Protótipo Funcional (MVP)',
+          duration: `Semanas 1 a ${w1End}`,
+          deliverables: [
+            'Ambiente de Cloud configurado com CI/CD automatizado',
+            'Modelagem do banco de dados e autenticação segura',
+            'Telas essenciais do fluxo principal validadas com os usuários chave'
+          ]
+        },
+        {
+          phase: 'Fase 2: Integração de Negócio & Migração de Dados',
+          duration: `Semanas ${w2Start} a ${w2End}`,
+          deliverables: [
+            'Migração e saneamento dos dados anteriores (planilhas ou legado)',
+            'Conexão com APIs externas (pagamento, emissão fiscal ou mensageria)',
+            'Validação das regras de negócio complexas do nicho'
+          ]
+        },
+        {
+          phase: 'Fase 3: Homologação, Treinamento & Go-Live Seguro',
+          duration: `Semanas ${w3Start} a ${timelineWeeksMax}`,
+          deliverables: [
+            'Testes de carga simulando picos operacionais de acesso',
+            'Treinamento prático da equipe com manuais e vídeos gravados',
+            'Virada de chave assistida (Go-Live) com suporte presencial/remoto de plantão'
+          ]
+        }
+      ];
+
+  const defaultRisks = [
     {
       risk: 'Resistência cultural da equipe interna na transição do processo anterior',
-      impact: 'Alto' as const,
       mitigation: 'Envolver líderes de operação desde a prototipação inicial e oferecer interface simples e familiar.'
     },
     {
       risk: 'Inconsistência de dados herdados da base antiga',
-      impact: 'Alto' as const,
       mitigation: 'Criar scripts de validação e limpeza prévia (data cleaning) antes da importação definitiva.'
     },
     {
       risk: 'Subdimensionamento da capacidade de infraestrutura em horários de pico',
-      impact: 'Médio' as const,
       mitigation: 'Implementar escalabilidade horizontal automática (auto-scaling) e filas de desacoplamento.'
     },
     {
       risk: 'Indisponibilidade de internet ou falha de conectividade local',
-      impact: sector.id === 'agro' || sector.id === 'industry' ? ('Alto' as const) : ('Baixo' as const),
       mitigation: 'Construção de arquitetura resiliente com cache local e sincronização automática.'
     }
   ];
+  const riskSrc = tpl?.risks ?? defaultRisks;
 
-  // Checklist de Conformidade e Segurança
-  const complianceChecklist = [
+  const strategicRisks = [
+    {
+      risk: riskSrc[0].risk,
+      impact: 'Alto' as const,
+      mitigation: riskSrc[0].mitigation
+    },
+    {
+      risk: riskSrc[1].risk,
+      impact: 'Alto' as const,
+      mitigation: riskSrc[1].mitigation
+    },
+    {
+      risk: riskSrc[2].risk,
+      impact: 'Médio' as const,
+      mitigation: riskSrc[2].mitigation
+    },
+    {
+      risk: riskSrc[3].risk,
+      impact: sector.id === 'agro' || sector.id === 'industry' ? ('Alto' as const) : ('Baixo' as const),
+      mitigation: riskSrc[3].mitigation
+    }
+  ];
+
+  const complianceChecklist = tpl?.complianceChecklist ?? [
     'Termo de Consentimento e Política de Privacidade atualizados para a nova aplicação',
     'Logs de auditoria imutáveis para rastrear quem criou, editou ou apagou qualquer registro crítico',
     'Criptografia de ponta a ponta em repouso (banco de dados) e em trânsito (HTTPS/TLS 1.3)',
