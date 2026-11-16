@@ -426,16 +426,22 @@ export function ArticleReader({
             </span>
             <div className="space-y-2">
               {(articlesNs?.articles ?? []).filter(a => a.id !== article.id).slice(0, 3).map(rel => (
-                <button
+                <a
                   key={rel.id}
-                  onClick={() => onNavigateToArticle(rel.id)}
-                  className="w-full text-left p-2.5 rounded-xl hover:bg-slate-800/70 border border-transparent hover:border-slate-800 transition-all text-xs group cursor-pointer"
+                  href={`/artigo/${rel.id}`}
+                  onClick={(e) => {
+                    if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                      e.preventDefault();
+                      onNavigateToArticle(rel.id);
+                    }
+                  }}
+                  className="w-full text-left p-2.5 rounded-xl hover:bg-slate-800/70 border border-transparent hover:border-slate-800 transition-all text-xs group cursor-pointer block no-underline text-inherit"
                 >
                   <span className="text-[10px] uppercase font-bold text-cyan-400 block mb-0.5">{rel.tag}</span>
                   <span className="text-slate-300 group-hover:text-white font-medium line-clamp-2 leading-snug">
                     {rel.title}
                   </span>
-                </button>
+                </a>
               ))}
             </div>
           </div>

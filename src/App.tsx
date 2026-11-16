@@ -362,30 +362,31 @@ export default function App() {
       setActiveDbTab(subTab as DatabaseTab);
     }
 
-    // Update URL hash
-    const hashMap: Record<PageId, string> = {
-      home: '',
-      articles: 'artigos',
-      article: `artigo-${selectedArticleId}`,
-      'decision-matrix': 'matriz-decisao',
-      'function-points': 'pontos-de-funcao',
-      business: 'business',
-      cloud: 'cloud',
-      courses: 'formacoes',
-      'code-for-fun': 'code-for-fun',
-      about: 'sobre',
-      editorial: 'diretrizes-editoriais',
-      contact: 'contato',
-      terms: 'termos',
-      frontend: 'frontend',
-      backend: 'backend',
-      database: 'database'
+    // Update URL clean pathname
+    const pathMap: Record<PageId, string> = {
+      home: '/',
+      articles: '/artigos',
+      article: `/artigo/${selectedArticleId}`,
+      'decision-matrix': '/matriz-decisao',
+      'function-points': '/pontos-de-funcao',
+      business: '/business',
+      cloud: '/cloud',
+      courses: '/formacoes',
+      'code-for-fun': '/code-for-fun',
+      about: '/sobre',
+      editorial: '/diretrizes-editoriais',
+      contact: '/contato',
+      terms: '/termos',
+      frontend: '/frontend',
+      backend: '/backend',
+      database: '/database'
     };
     if (page === 'articles') {
       setArticleFilterQuery('');
     }
-    if (window.location.hash !== `#${hashMap[page]}`) {
-      window.history.pushState(null, '', hashMap[page] ? `#${hashMap[page]}` : window.location.pathname);
+    const targetPath = pathMap[page] || '/';
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
     }
 
     setSidebarOpen(false);
@@ -396,9 +397,9 @@ export default function App() {
     const term = filterTerm.trim();
     setArticleFilterQuery(term);
     setCurrentPage('articles');
-    const targetHash = term ? `#artigos?q=${encodeURIComponent(term)}` : '#artigos';
-    if (window.location.hash !== targetHash) {
-      window.history.pushState(null, '', targetHash);
+    const targetPath = term ? `/artigos?q=${encodeURIComponent(term)}` : '/artigos';
+    if (window.location.pathname + window.location.search !== targetPath) {
+      window.history.pushState(null, '', targetPath);
     }
     setSearchQuery('');
     setSidebarOpen(false);
@@ -408,7 +409,10 @@ export default function App() {
   const openArticle = (articleId: string) => {
     setSelectedArticleId(articleId);
     setCurrentPage('article');
-    window.history.pushState(null, '', `#artigo-${articleId}`);
+    const targetPath = `/artigo/${articleId}`;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
     setSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -1159,10 +1163,16 @@ export default function App() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {detailedArticles.map((article) => (
-                        <div
+                        <a
                           key={article.id}
-                          onClick={() => openArticle(article.id)}
-                          className={`group p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${theme === 'dark'
+                          href={`/artigo/${article.id}`}
+                          onClick={(e) => {
+                            if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                              e.preventDefault();
+                              openArticle(article.id);
+                            }
+                          }}
+                          className={`group p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between block no-underline text-inherit ${theme === 'dark'
                             ? 'bg-slate-900/90 border-slate-800 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/10'
                             : 'bg-white border-slate-200 hover:border-cyan-500/50 shadow-sm hover:shadow-md'
                             }`}
@@ -1199,7 +1209,7 @@ export default function App() {
                             <span>{t.home.readFullArticle}</span>
                             <ArrowRight size={15} />
                           </div>
-                        </div>
+                        </a>
                       ))}
                     </div>
                   )}
@@ -1914,10 +1924,16 @@ export default function App() {
                 ) : filteredArticles.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {filteredArticles.map((art) => (
-                      <div
+                      <a
                         key={art.id}
-                        onClick={() => openArticle(art.id)}
-                        className="group p-6 sm:p-7 rounded-2xl border border-slate-800 bg-slate-900/80 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/10 transition-all cursor-pointer flex flex-col justify-between"
+                        href={`/artigo/${art.id}`}
+                        onClick={(e) => {
+                          if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                            e.preventDefault();
+                            openArticle(art.id);
+                          }
+                        }}
+                        className="group p-6 sm:p-7 rounded-2xl border border-slate-800 bg-slate-900/80 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/10 transition-all cursor-pointer flex flex-col justify-between block no-underline text-inherit"
                       >
                         <div className="space-y-3">
                           <div className="flex items-center justify-between text-xs">
@@ -1943,7 +1959,7 @@ export default function App() {
                           <span>{t.articlesList.readFull}</span>
                           <ArrowRight size={14} />
                         </div>
-                      </div>
+                      </a>
                     ))}
                   </div>
                 ) : (

@@ -7,7 +7,20 @@
   <title>CodeCompare • Arquitetura de Software, Benchmarks & Deep Dives</title>
   <meta name="description"
     content="Blog técnico e análises arquiteturais para engenheiros de software: benchmarks de latência, comparativos aprofundados entre frameworks frontend, APIs backend, bancos de dados e provedores Cloud (AWS vs Azure)." />
-  <link rel="canonical" href="https://www.devedulessa.com.br/" />
+  <link id="canonical-tag" rel="canonical" href="https://www.devedulessa.com.br/" />
+  <script>
+    (function() {
+      try {
+        var p = window.location.pathname;
+        if (p && p !== '/' && p !== '/index.html') {
+          var tag = document.getElementById('canonical-tag');
+          if (tag) {
+            tag.setAttribute('href', 'https://www.devedulessa.com.br' + p.replace(/\/$/, ''));
+          }
+        }
+      } catch(e) {}
+    })();
+  </script>
   <meta property="og:url" content="https://www.devedulessa.com.br/" />
   <meta property="og:title" content="CodeCompare • Arquitetura de Software, Benchmarks & Deep Dives" />
   <meta property="og:description"
@@ -89,13 +102,16 @@
             </p>
           </div>
           <nav style="display: flex; gap: 16px; font-size: 14px; font-weight: 600; flex-wrap: wrap;">
-            <a href="#artigos" style="color: #38bdf8; text-decoration: none;">Artigos Técnicos</a>
-            <a href="#formacoes" style="color: #fbbf24; text-decoration: none;">Formações & Certificações</a>
-            <a href="#matriz-decisao" style="color: #c084fc; text-decoration: none;">Matriz de Decisão</a>
-            <a href="#pontos-de-funcao" style="color: #38bdf8; text-decoration: none;">Pontos de Função (APF)</a>
-            <a href="#sobre" style="color: #94a3b8; text-decoration: none;">Sobre o Autor</a>
-            <a href="#diretrizes-editoriais" style="color: #94a3b8; text-decoration: none;">Diretrizes Editoriais</a>
-            <a href="#contato" style="color: #94a3b8; text-decoration: none;">Contato</a>
+            <a href="/artigos" style="color: #38bdf8; text-decoration: none;">Artigos Técnicos</a>
+            <a href="/formacoes" style="color: #fbbf24; text-decoration: none;">Formações & Certificações</a>
+            <a href="/matriz-decisao" style="color: #c084fc; text-decoration: none;">Matriz de Decisão</a>
+            <a href="/pontos-de-funcao" style="color: #38bdf8; text-decoration: none;">Pontos de Função (APF)</a>
+            <a href="/cloud" style="color: #38bdf8; text-decoration: none;">Cloud (AWS vs Azure)</a>
+            <a href="/business" style="color: #38bdf8; text-decoration: none;">Diagnóstico Business</a>
+            <a href="/code-for-fun" style="color: #38bdf8; text-decoration: none;">Code for Fun</a>
+            <a href="/sobre" style="color: #94a3b8; text-decoration: none;">Sobre o Autor</a>
+            <a href="/diretrizes-editoriais" style="color: #94a3b8; text-decoration: none;">Diretrizes Editoriais</a>
+            <a href="/contato" style="color: #94a3b8; text-decoration: none;">Contato</a>
           </nav>
         </div>
       </header>
@@ -181,6 +197,9 @@
                 boilerplate de memoização, mas preserva a premissa de renderização baseada em função de componente.
               </p>
             </div>
+            <div style="margin-top: 16px;">
+              <a href="/artigo/signals-reactivity" style="display: inline-flex; align-items: center; gap: 8px; color: #38bdf8; font-weight: 700; text-decoration: none; font-size: 13px; border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.08); padding: 8px 16px; border-radius: 8px;">Acessar artigo completo: Signals &rarr;</a>
+            </div>
           </article>
 
           <!-- Artigo 2: .NET vs Spring Boot vs FastAPI -->
@@ -235,6 +254,9 @@
                 ecossistema Enterprise JavaBeans, Spring Security e auditoria bancária legada.
               </p>
             </div>
+            <div style="margin-top: 16px;">
+              <a href="/artigo/net8-vs-fastapi" style="display: inline-flex; align-items: center; gap: 8px; color: #c084fc; font-weight: 700; text-decoration: none; font-size: 13px; border: 1px solid rgba(192, 132, 252, 0.3); background: rgba(192, 132, 252, 0.08); padding: 8px 16px; border-radius: 8px;">Acessar artigo completo: .NET 8 vs FastAPI &rarr;</a>
+            </div>
           </article>
 
           <!-- Artigo 3: PostgreSQL vs MongoDB -->
@@ -284,6 +306,9 @@
                 particionamento horizontal (sharding geográfico) é um requisito inegociável desde o dia 1.
               </p>
             </div>
+            <div style="margin-top: 16px;">
+              <a href="/artigo/sql-vs-nosql" style="display: inline-flex; align-items: center; gap: 8px; color: #34d399; font-weight: 700; text-decoration: none; font-size: 13px; border: 1px solid rgba(52, 211, 153, 0.3); background: rgba(52, 211, 153, 0.08); padding: 8px 16px; border-radius: 8px;">Acessar artigo completo: PostgreSQL vs MongoDB &rarr;</a>
+            </div>
           </article>
 
           <!-- Artigo 4: Redis Caching -->
@@ -330,6 +355,9 @@
                 </ul>
               </div>
             </div>
+            <div style="margin-top: 16px;">
+              <a href="/artigo/rest-api-cache" style="display: inline-flex; align-items: center; gap: 8px; color: #f87171; font-weight: 700; text-decoration: none; font-size: 13px; border: 1px solid rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08); padding: 8px 16px; border-radius: 8px;">Acessar artigo completo: Cache em APIs REST &rarr;</a>
+            </div>
           </article>
 
           <!-- Artigo 5: Clean Architecture com FastAPI -->
@@ -364,6 +392,9 @@
                 banco.
               </p>
             </div>
+            <div style="margin-top: 16px;">
+              <a href="/artigo/go-microservices" style="display: inline-flex; align-items: center; gap: 8px; color: #38bdf8; font-weight: 700; text-decoration: none; font-size: 13px; border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.08); padding: 8px 16px; border-radius: 8px;">Acessar artigo completo: Microsserviços em Go &rarr;</a>
+            </div>
           </article>
 
           <!-- Artigo 6: SSR e Edge Rendering -->
@@ -396,6 +427,9 @@
                 com muito mais estabilidade e menor custo hospedados como SPAs puras em CDN (S3 + CloudFront /
                 Cloudflare).
               </p>
+            </div>
+            <div style="margin-top: 16px;">
+              <a href="/artigo/indices-and-pagination" style="display: inline-flex; align-items: center; gap: 8px; color: #60a5fa; font-weight: 700; text-decoration: none; font-size: 13px; border: 1px solid rgba(96, 165, 250, 0.3); background: rgba(96, 165, 250, 0.08); padding: 8px 16px; border-radius: 8px;">Acessar artigo completo: Índices e Paginação por Cursor &rarr;</a>
             </div>
           </article>
 
@@ -441,6 +475,9 @@
                 RabbitMQ é insubstituível. Para pipelines de telemetria massiva, Event Sourcing, auditoria histórica e
                 Change Data Capture (CDC), o Apache Kafka é a escolha definitiva.
               </p>
+            </div>
+            <div style="margin-top: 16px;">
+              <a href="/artigo/rabbitmq-vs-kafka-event-driven" style="display: inline-flex; align-items: center; gap: 8px; color: #a78bfa; font-weight: 700; text-decoration: none; font-size: 13px; border: 1px solid rgba(167, 139, 250, 0.3); background: rgba(167, 139, 250, 0.08); padding: 8px 16px; border-radius: 8px;">Acessar artigo completo: RabbitMQ vs Kafka &rarr;</a>
             </div>
           </article>
         </section>
@@ -643,6 +680,49 @@
             <br />
             <strong style="color: #38bdf8;">eduardolessa2011@gmail.com</strong>
           </p>
+        </section>
+
+        <!-- Diretório Canônico de Links Internos para Rastreamento e Indexação (Googlebot) -->
+        <section style="margin-bottom: 48px; border-top: 1px solid #1e293b; padding-top: 32px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin-bottom: 16px;">
+            Diretório de Artigos Técnicos e Ferramentas de Engenharia
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; font-size: 13px;">
+            <div>
+              <strong style="color: #38bdf8; display: block; margin-bottom: 8px;">Artigos & Deep Dives:</strong>
+              <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.9;">
+                <li><a href="/artigo/rabbitmq-vs-kafka-event-driven" style="color: #94a3b8; text-decoration: none;">• RabbitMQ vs Apache Kafka (EDA)</a></li>
+                <li><a href="/artigo/signals-reactivity" style="color: #94a3b8; text-decoration: none;">• Signals: Reatividade Angular 17+ e Vue 3</a></li>
+                <li><a href="/artigo/net8-vs-fastapi" style="color: #94a3b8; text-decoration: none;">• .NET 8 Minimal APIs vs FastAPI</a></li>
+                <li><a href="/artigo/sql-vs-nosql" style="color: #94a3b8; text-decoration: none;">• PostgreSQL (JSONB) vs MongoDB 7</a></li>
+                <li><a href="/artigo/rest-api-cache" style="color: #94a3b8; text-decoration: none;">• Cache em APIs REST (Redis & Resiliência)</a></li>
+                <li><a href="/artigo/go-microservices" style="color: #94a3b8; text-decoration: none;">• Microsserviços de Baixa Latência em Go</a></li>
+                <li><a href="/artigo/indices-and-pagination" style="color: #94a3b8; text-decoration: none;">• Índices B-Tree/GIN e Paginação por Cursor</a></li>
+                <li><a href="/artigos" style="color: #38bdf8; font-weight: 600; text-decoration: none;">&rarr; Ver Todos os Artigos Técnicos</a></li>
+              </ul>
+            </div>
+            <div>
+              <strong style="color: #c084fc; display: block; margin-bottom: 8px;">Ferramentas & Arquitetura:</strong>
+              <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.9;">
+                <li><a href="/matriz-decisao" style="color: #94a3b8; text-decoration: none;">• Matriz de Decisão Arquitetural</a></li>
+                <li><a href="/pontos-de-funcao" style="color: #94a3b8; text-decoration: none;">• Calculadora de Pontos de Função (APF)</a></li>
+                <li><a href="/cloud" style="color: #94a3b8; text-decoration: none;">• Comparador Cloud: AWS vs Azure</a></li>
+                <li><a href="/business" style="color: #94a3b8; text-decoration: none;">• Diagnóstico de Arquitetura Business</a></li>
+                <li><a href="/code-for-fun" style="color: #94a3b8; text-decoration: none;">• Code for Fun: Playground de Código</a></li>
+                <li><a href="/formacoes" style="color: #94a3b8; text-decoration: none;">• Formações & Certificações Recomendadas</a></li>
+              </ul>
+            </div>
+            <div>
+              <strong style="color: #34d399; display: block; margin-bottom: 8px;">Institucional & Governança:</strong>
+              <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.9;">
+                <li><a href="/sobre" style="color: #94a3b8; text-decoration: none;">• Sobre o Autor (Eduardo Lessa)</a></li>
+                <li><a href="/diretrizes-editoriais" style="color: #94a3b8; text-decoration: none;">• Diretrizes Editoriais & E-E-A-T</a></li>
+                <li><a href="/contato" style="color: #94a3b8; text-decoration: none;">• Canal Oficial de Contato</a></li>
+                <li><a href="/termos-de-uso" style="color: #94a3b8; text-decoration: none;">• Termos de Uso do CodeCompare</a></li>
+                <li><a href="/politica-de-privacidade" style="color: #94a3b8; text-decoration: none;">• Política de Privacidade (LGPD/GDPR)</a></li>
+              </ul>
+            </div>
+          </div>
         </section>
       </main>
 
